@@ -1,0 +1,16 @@
+apiVersion: v2
+name: orchestrator
+description: A Helm chart for Kubernetes
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: orchestrator-operator
+    version: 0.1.0
+    repository: file://orchestrator-operator
+  - name: sonataflow-postgresql
+    version: 0.1.0
+    repository: file://sonataflow-postgresql
+  - name: orchestrator
+    version: 0.1.0
+    repository: file://orchestrator

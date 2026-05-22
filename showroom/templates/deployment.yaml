@@ -1,0 +1,38 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ include "showroom.fullname" . }}
+  labels:
+    app: {{ include "showroom.fullname" . }}
+    app.kubernetes.io/component: {{ include "showroom.fullname" . }}
+    app.kubernetes.io/instance: {{ include "showroom.fullname" . }}
+    app.openshift.io/runtime: httpd
+  annotations:
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"{{ include "showroom.fullname" . }}:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"showroom\")].image"}]'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: {{ include "showroom.fullname" . }}
+  template:
+    metadata:
+      labels:
+        deployment: {{ include "showroom.fullname" . }}
+    spec:
+      containers:
+        - name: showroom
+          image: 'image-registry.openshift-image-registry.svc:5000/{{ .Release.Namespace }}/{{ include "showroom.fullname" . }}'
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources: {}
+          imagePullPolicy: Always
+      restartPolicy: Always
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+

@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: unseal-volt
+spec:
+  template:
+    spec:
+      containers:
+      - name: unseal-volt
+        command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Wait for Vault Pod Readiness"
+              until oc get pod vault-0 -n vault -o jsonpath='{.status.conditions[?(@.type=="PodReadyToStartContainers")].status}' | grep -q True; do
+                echo "Waiting for Ready..."
+                sleep 2
+              done
+              oc exec vault-0 --namespace=vault --stdin --tty -- vault operator init -format=yaml > /tmp/vault-auto-unseal-keys.txt
+              cat /tmp/vault-auto-unseal-keys.txt | oc exec -i -n vault vault-0 -c vault "--" sh -c "cat > /vault/data/vault-auto-unseal-keys.txt"
+              cat /vault-unseal-config/unseal.sh | oc exec -i -n vault vault-0 -c vault "--" sh -c "cat > /vault/data/unseal.sh"
+              oc exec vault-0 --namespace=vault --stdin --tty -- /bin/sh /vault/data/unseal.sh
+        image: registry.redhat.io/openshift4/ose-cli:v4.7
+        volumeMounts:
+          - mountPath: /vault-unseal-config
+            name: vault-unseal-config-volume
+      restartPolicy: Never
+      serviceAccount: vault
+      volumes:
+      - name: vault-unseal-config-volume
+        configMap:
+          name: vault-unseal-config

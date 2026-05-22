@@ -1,0 +1,11 @@
+rbac:
+  - namespace: 
+    subjects:
+      - kind: 
+        name: 
+        role: 
+      - kind: 
+        name: 
+        role:
+ 
+customRoles:

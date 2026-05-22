@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sonataflow-postgresql.name" . }}
+  labels:
+    {{- include "sonataflow-postgresql.labels" . | nindent 4 }}
+    app.openshift.io/runtime: sonataflow-postgresql
+  annotations:
+    {{- include "sonataflow-postgresql.argocd-syncwave" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sonataflow-postgresql.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "sonataflow-postgresql.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ include "sonataflow-postgresql.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: postgresql
+              containerPort: {{ .Values.service.containerPort }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: POSTGRESQL_USER
+              valueFrom:
+                secretKeyRef:
+                  key: database-user
+                  name: {{ include "sonataflow-postgresql.name" . }}
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: database-password
+                  name: {{ include "sonataflow-postgresql.name" . }}
+            - name: POSTGRESQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  key: database-name
+                  name: {{ include "sonataflow-postgresql.name" . }}
+          {{- if eq .Values.persistence.mode "persistent" }}
+          volumeMounts:
+            - name: "{{ include "sonataflow-postgresql.name" . }}-data"
+              mountPath: "/var/lib/pgsql/data"
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+      {{- if eq .Values.persistence.mode "persistent" }}
+      volumes:
+        - name: "{{ include "sonataflow-postgresql.name" . }}-data"
+          persistentVolumeClaim:
+            claimName: {{ include "sonataflow-postgresql.name" . }}
+      {{- end }}

@@ -1,0 +1,30 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: {{ include "showroom.fullname" . }}
+  labels:
+    build: {{ include "showroom.fullname" . }}
+  annotations:
+    "helm.sh/hook": pre-install
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: '{{ include "showroom.fullname" . }}:latest'
+  resources: {}
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        namespace: openshift
+        name: 'httpd:2.4-ubi8'
+  postCommit: {}
+  source:
+    type: Binary
+    binary: {}
+

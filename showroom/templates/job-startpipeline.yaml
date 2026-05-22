@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "showroom.fullname" . }}-pipelinerun-launcher
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: pipeline
+      containers:
+        - name: create-pipelinerun
+          image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cat <<'EOF' | oc apply -f -
+              apiVersion: tekton.dev/v1
+              kind: PipelineRun
+              metadata:
+                # generateName: {{ include "showroom.fullname" . }}-
+                name: {{ include "showroom.fullname" . }}-start
+                annotations:
+                    argocd.argoproj.io/sync-wave: "-1"
+              spec:
+                pipelineRef:
+                  name: {{ include "showroom.fullname" . }}
+                params:
+                  - name: showroom-repo
+                    value: https://github.com/rh-opencodequest-origins/showroom.git
+                  - name: source-branch
+                    value: main
+                workspaces:
+                  - name: source
+                    volumeClaimTemplate:
+                      metadata:
+                        generateName: {{ include "showroom.fullname" . }}-pvc-
+                      spec:
+                        accessModes:
+                          - ReadWriteOnce
+                        resources:
+                          requests:
+                            storage: 2Gi
+              EOF

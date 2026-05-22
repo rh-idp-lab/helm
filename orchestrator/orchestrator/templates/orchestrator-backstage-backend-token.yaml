@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "orchestrator.name" . }}-backstage-backend-token
+  namespace: {{ include "orchestrator.namespace" . }}
+  annotations:
+    {{- include "orchestrator.argocd-syncwave" . | nindent 4 }}
+type: opaque
+stringData:
+  BACKSTAGE_BACKEND_BEARER_TOKEN: {{ .Values.backstage.backend.token }}
+  BACKSTAGE_BACKEND_URL: {{ .Values.backstage.backend.url }}

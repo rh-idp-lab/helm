@@ -1,0 +1,6 @@
+#Sonarqube Chart Values
+
+sonarqube:
+  image: quay.io/redhat-gpte/sonarqube:7.7
+  adminPassword: admin
+  namespace: sonarqube

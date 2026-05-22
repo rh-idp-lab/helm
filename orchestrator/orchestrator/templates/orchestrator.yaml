@@ -1,0 +1,30 @@
+apiVersion: rhdh.redhat.com/v1alpha3
+kind: Orchestrator
+metadata:
+  name: {{ include "orchestrator.name" . }}
+  namespace: {{ include "orchestrator.namespace" . }}
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    {{- include "orchestrator.argocd-syncwave" . | nindent 4 }}
+spec:
+  platform:
+    namespace: orchestrator
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  postgres:
+    authSecret:
+      name: sonataflow-psql-postgresql
+      passwordKey: database-password
+      userKey: database-user
+    database: sonataflow
+    name: sonataflow-psql-postgresql
+    namespace: orchestrator
+  rhdh:
+    installOperator: false
+    name: ''
+    namespace: ''

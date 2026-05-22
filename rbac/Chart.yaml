@@ -1,0 +1,4 @@
+apiVersion: v2
+name: rbac-chart
+description: Helm chart to manage OpenShift RBAC for users/groups
+version: 0.1.0

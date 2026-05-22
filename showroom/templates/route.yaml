@@ -1,0 +1,19 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: {{ include "showroom.fullname" . }}
+  labels:
+    app: {{ include "showroom.fullname" . }}
+    app.kubernetes.io/component: {{ include "showroom.fullname" . }}
+    app.kubernetes.io/instance: {{ include "showroom.fullname" . }}
+spec:
+  to:
+    kind: Service
+    name: {{ include "showroom.fullname" . }}
+    weight: 100
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

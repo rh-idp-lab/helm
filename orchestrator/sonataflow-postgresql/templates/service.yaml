@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "sonataflow-postgresql.name" . }}
+  labels:
+    {{- include "sonataflow-postgresql.labels" . | nindent 4 }}
+  annotations:
+    {{- include "sonataflow-postgresql.argocd-syncwave" . | nindent 4 }}
+spec:
+  ports:
+    - name: {{ .Values.service.portName }}
+      protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.containerPort }}
+  selector:
+    {{- include "sonataflow-postgresql.selectorLabels" . | nindent 4 }}

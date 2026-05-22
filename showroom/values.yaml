@@ -1,0 +1,29 @@
+antora:
+  title: ""
+  asciidocAttributes:
+    product_name_rhdh: Red Hat Developer Hub
+    lab_name: "I'm the lab_name var"
+    release-version: master
+    page-pagination: true
+    my_var: "foo"
+    guid: my-guid
+    ssh_user: devops
+    ssh_password: devops
+    ssh_command: ssh someone@example.com
+    dev-username: mon-user-dev
+    pe-username: mon-user-pe
+    common_password: ""
+    openshift_cluster_ingress_domain: ""
+    openshift_gitops_password: ""
+    team-id: ""
+    user1: ""
+    user2: ""
+    user3: ""
+    openai-url: ""
+    openai-model: ""
+    openai-key: ""
+    page-links:
+    - url: https://redhat.com
+      text: Red Hat
+    - url: https://www.redhat.com/en/engage/state-of-platform-engineering-age-of-ai
+      text: State of PE Report

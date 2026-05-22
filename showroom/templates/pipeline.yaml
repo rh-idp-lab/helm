@@ -1,0 +1,64 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: {{ include "showroom.fullname" . }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  params:
+    - description: Git repository containing documentation
+      name: showroom-repo
+      type: string
+    - description: Git branch
+      name: source-branch
+      type: string
+  tasks:
+    - name: git-clone
+      params:
+        - name: URL
+          value: $(params.showroom-repo)
+        - name: REVISION
+          value: $(params.source-branch)
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: git-clone
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      workspaces:
+        - name: output
+          workspace: source
+    - name: antora-build
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: Task
+        name: antora-build-{{ include "showroom.fullname" . }}
+      workspaces:
+        - name: source
+          workspace: source
+    - name: build-s2i-image
+      params:
+        - name: SCRIPT
+          value: oc start-build --from-dir www buildconfig/{{ include "showroom.fullname" . }} --follow
+        - name: VERSION
+          value: '4.18'
+      runAfter:
+        - antora-build
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      workspaces:
+        - name: manifest_dir
+          workspace: source
+  workspaces:
+    - name: source

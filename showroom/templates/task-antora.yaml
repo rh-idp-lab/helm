@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: antora-build-{{ include "showroom.fullname" . }}
+  annotations:
+    "helm.sh/hook": pre-install
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  steps:
+    - args:
+        - '--stacktrace'
+        - default-site.yml
+      image: docker.io/antora/antora
+      name: antora
+      volumeMounts:
+        - mountPath: /antora/content/antora.yml
+          name: {{ include "showroom.fullname" . }}-config-volume
+          subPath: antora.yml
+      workspaces:
+        - mountPath: /antora
+          name: source
+  volumes:
+    - configMap:
+        items:
+          - key: antora.yml
+            path: antora.yml
+        name: {{ include "showroom.fullname" . }}-antora-config
+      name: {{ include "showroom.fullname" . }}-config-volume
+  workspaces:
+    - name: source

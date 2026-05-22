@@ -1,0 +1,125 @@
+kind: ConfigMap
+metadata:
+  name:  cm-gitlab-templates
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+apiVersion: v1
+data:
+  playbook.yaml: |
+    ---
+    - name: Configure GitLab
+      hosts: localhost
+      vars:
+        gitlab_namespace: {{ $.Release.Namespace }}
+        root_password: {{ $.Values.gitlab.rootPassword }}
+        user_create: true
+      tasks:
+        - name: Check GitLab Liveness
+          ansible.builtin.uri:
+            url: https://{{ $.Values.gitlab.host }}/api/v4/projects
+            method: GET
+            validate_certs: false
+          register: r_liveness
+          retries: 60
+          delay: 10
+          until: r_liveness.status == 200
+
+        - name: Retrieve root token
+          kubernetes.core.k8s_info:
+            api_version: v1
+            kind: Secret
+            name: root-user-personal-token
+            namespace: '{{ "{{" }} gitlab_namespace {{ "}}" }}'
+          register: r_root_token
+          failed_when: r_root_token.resources[0].data.token | length == 0
+
+        - name: Decode root token
+          set_fact:
+            root_token: '{{ "{{" }} r_root_token.resources[0].data.token | b64decode {{ "}}" }}'
+
+        - name: Git config
+          ansible.builtin.command: git config --global user.email "{{ $.Values.gitlab.email.address }}"
+          ignore_errors: true
+
+        - name: Git config
+          ansible.builtin.command: git config --global user.name "{{ $.Values.gitlab.email.displayName }}"
+          ignore_errors: true
+
+{{- range $item := .Values.gitlab.templates }}
+
+        - name: Build git repo url
+          ansible.builtin.set_fact:
+            _git_template_repo_url: https://root:{{ $.Values.gitlab.rootPassword }}@{{ $.Values.gitlab.host }}/{{ $item.group }}/{{ $item.project }}
+
+        - name: Remove older repo folders
+          shell: rm -rf /tmp/{{ $item.project }}
+
+        - name: Clone {{ $item.project }}
+          ansible.builtin.git:
+            accept_hostkey: true
+            force: true
+            repo: '{{ "{{" }} _git_template_repo_url {{ "}}" }}'
+            dest: "/tmp/{{ $item.project }}"
+            version: "{{ $item.branch }}"
+          environment:
+            GIT_SSL_NO_VERIFY: "true"
+          register: r_git_clone
+          retries: 60
+          delay: 10
+          until: r_git_clone is not failed
+
+{{- range $item1 := $item.templates }}
+
+        - name: Fetch /tmp/{{ $item.project }}/{{ $item1 }} template from remote host
+          run_once: true
+          ansible.builtin.fetch:
+            src: /tmp/{{ $item.project }}/{{ $item1 }}
+            dest: /tmp/{{ $item1 }}
+            flat: true
+            fail_on_missing: true
+
+        - name: Apply template /tmp/{{ $item.project }}/{{ $item1 }}
+          ansible.builtin.template:
+            src: /tmp/{{ $item1 }}
+            dest: /tmp/{{ $item.project }}/{{ $item1 }}
+            mode: "0660"         
+          vars:
+            gitlab_host: "{{ $.Values.gitlab.host }}"
+            cluster_subdomain: "{{ $.Values.cluster.subdomain }}"
+            rhdh_gitops_namespace: "{{ $.Values.gitops.namespace }}"
+            rhdh_gitops_project: "{{ $.Values.gitops.project }}"
+            quay_host: "{{ $.Values.quay.host }}"
+            orchestrator_namespace: "{{ $.Values.orchestrator.namespace }}"
+            group: "{{ $item.group }}"
+            quay_project: "{{ $.Values.quay.project }}"
+            stackrox_endpoint: "{{ $.Values.stackrox.endpoint }}"
+            user1: "{{ $item.user1 }}"
+            user2: "{{ $item.user2 }}"
+            user3: "{{ $item.user3 }}"
+            teamid: "{{ $item.teamid }}"
+            ocpdomain: "{{ $item.ocpdomain }}"
+{{- end }}
+
+        - name: Add new files to the repository
+          ansible.builtin.command:
+            chdir: >-
+              /tmp/{{ $item.project }}
+            cmd: "git add ."
+          ignore_errors: true
+
+        - name: Commit changes to the repository
+          ansible.builtin.command:
+            chdir: >-
+              /tmp/{{ $item.project }}
+            cmd: >-
+              git commit -a -m 'Updates for starting scenario.'
+          ignore_errors: true
+
+        - name: Push all changes back to the project repository
+          ansible.builtin.command:
+            chdir: >-
+              /tmp/{{ $item.project }}
+            cmd: >-
+              git push {{ "{{" }} _git_template_repo_url {{ "}}" }}
+
+{{- end }}
