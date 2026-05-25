@@ -22,6 +22,8 @@ gitlab:
     db: "0123456789"
     otp: "0123456789"
     secret: "0123456789"
+  skipInitialWait: false
+
   users:
     users:
       - id: dev1

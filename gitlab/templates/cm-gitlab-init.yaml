@@ -17,6 +17,7 @@ data:
         - name: Pause for 5 minutes waiting for GitLab
           ansible.builtin.pause:
             minutes: 5
+          when: not (skip_initial_wait | default(false) | bool)
 
         - name: Check GitLab Liveness
           ansible.builtin.uri:

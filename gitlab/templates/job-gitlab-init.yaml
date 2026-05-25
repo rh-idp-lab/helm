@@ -15,7 +15,11 @@ spec:
           - '-c'
           - |
             set -x
-            ansible-playbook -i localhost /scripts/playbook.yaml
+            ansible-playbook -i localhost /scripts/playbook.yaml \
+              -e "skip_initial_wait=${SKIP_INITIAL_WAIT:-false}"
+        env:
+          - name: SKIP_INITIAL_WAIT
+            value: "{{ .Values.gitlab.skipInitialWait | default false | toString }}"
         image: quay.io/agnosticd/ee-multicloud:latest
         volumeMounts:
           - mountPath: /scripts
