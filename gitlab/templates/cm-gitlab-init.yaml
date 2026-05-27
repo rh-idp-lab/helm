@@ -54,6 +54,18 @@ data:
           set_fact:
             root_token: '{{ "{{" }} r_root_token.resources[0].data.token | b64decode {{ "}}" }}'
 
+        - name: Wait for GitLab admin API to be ready
+          ansible.builtin.uri:
+            url: https://{{ $.Values.gitlab.host }}/api/v4/application/settings
+            method: GET
+            headers:
+              PRIVATE-TOKEN: '{{ "{{" }} root_token {{ "}}" }}'
+            validate_certs: false
+          register: r_admin_ready
+          retries: 60
+          delay: 10
+          until: r_admin_ready.status == 200
+
         - name: Update application settings
           ansible.builtin.uri:
             url: https://{{ $.Values.gitlab.host }}/api/v4/application/settings
@@ -68,6 +80,10 @@ data:
               PRIVATE-TOKEN: '{{ "{{" }} root_token {{ "}}" }}'
             validate_certs: false
             status_code: 200
+          register: r_app_settings
+          retries: 30
+          delay: 10
+          until: r_app_settings.status == 200
 
 {{- range $item := .Values.gitlab.users.users }}
 
