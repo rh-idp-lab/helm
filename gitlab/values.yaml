@@ -39,7 +39,7 @@ gitlab:
         # - name: parasol-store-dev-template
         #   url: https://github.com/rh-opencodequest-origins/parasol-store-dev-templates.git
         - name: developer-hub-config
-          url: https://github.com/rh-opencodequest-origins/developer-hub-config.git
+          url: https://github.com/rh-idp-lab/developer-hub-config.git
         # - name: import-existing-app-template
         #   url: https://github.com/rh-opencodequest-origins/import-existing-app-template.git
         # - name: import-existing-api-template
