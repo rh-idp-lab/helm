@@ -72,27 +72,41 @@ data:
             flat: true
             fail_on_missing: true
 
-        - name: Apply template /tmp/{{ $item.project }}/{{ $item1 }}
-          ansible.builtin.template:
-            src: /tmp/{{ $item1 }}
-            dest: /tmp/{{ $item.project }}/{{ $item1 }}
-            mode: "0660"         
-          vars:
-            cluster_subdomain: "{{ $.Values.cluster.subdomain }}"
-            backstage_host: "{{ $.Values.backstage.host }}"
-            gitlab_host: "{{ $.Values.gitlab.host }}"
-            keycloak_host: "{{ $.Values.keycloak.host }}"
-            keycloak_realm: "{{ $.Values.keycloak.realm }}"
-            keycloak_login_realm: "{{ $.Values.keycloak.loginRealm }}"
-            keycloak_client_id: "{{ $.Values.keycloak.clientId }}"
-            keycloak_client_secret: "{{ $.Values.keycloak.clientSecret }}"
-            argocd_host: "{{ $.Values.gitops.host }}"
-            kubernetes_api_url: "{{ $.Values.kubernetes.api }}"
-            backstage_backend_secret: {{ randAlphaNum 24 | b64enc }}
-            oauth2_proxy_cookie_secret: {{ randAlpha 32 | lower | b64enc }}
-            oauth2_proxy_oidc_issuer: "{{ $.Values.oauth2.issuer }}"
-            orchestrator_sonataflow_data_index_service: "{{ $.Values.orchestrator.sonataFlowDataIndexService }}"
-            postgresql_existingSecret: "{{ $.Values.nameOverride }}-postgresql"
+        - name: Check if {{ $item1 }} still has unresolved placeholders
+          ansible.builtin.shell: >-
+            grep -l '{{ "{{" }} cluster_subdomain {{ "}}" }}' /tmp/{{ $item.project }}/{{ $item1 }} || true
+          register: r_needs_update_{{ $item1 | replace(".", "_") | replace("/", "_") }}
+          changed_when: false
+
+        - name: Apply substitutions to /tmp/{{ $item.project }}/{{ $item1 }}
+          ansible.builtin.shell: |
+            python3 - <<'PYEOF'
+            substitutions = {
+                '{{ "{{" }} cluster_subdomain {{ "}}" }}': '{{ $.Values.cluster.subdomain }}',
+                '{{ "{{" }} backstage_host {{ "}}" }}': '{{ $.Values.backstage.host }}',
+                '{{ "{{" }} gitlab_host {{ "}}" }}': '{{ $.Values.gitlab.host }}',
+                '{{ "{{" }} keycloak_host {{ "}}" }}': '{{ $.Values.keycloak.host }}',
+                '{{ "{{" }} keycloak_realm {{ "}}" }}': '{{ $.Values.keycloak.realm }}',
+                '{{ "{{" }} keycloak_login_realm {{ "}}" }}': '{{ $.Values.keycloak.loginRealm }}',
+                '{{ "{{" }} keycloak_client_id {{ "}}" }}': '{{ $.Values.keycloak.clientId }}',
+                '{{ "{{" }} keycloak_client_secret {{ "}}" }}': '{{ $.Values.keycloak.clientSecret }}',
+                '{{ "{{" }} argocd_host {{ "}}" }}': '{{ $.Values.gitops.host }}',
+                '{{ "{{" }} kubernetes_api_url {{ "}}" }}': '{{ $.Values.kubernetes.api }}',
+                '{{ "{{" }} backstage_backend_secret {{ "}}" }}': '{{ randAlphaNum 24 | b64enc }}',
+                '{{ "{{" }} oauth2_proxy_cookie_secret {{ "}}" }}': '{{ randAlpha 32 | lower | b64enc }}',
+                '{{ "{{" }} oauth2_proxy_oidc_issuer {{ "}}" }}': '{{ $.Values.oauth2.issuer }}',
+                '{{ "{{" }} orchestrator_sonataflow_data_index_service {{ "}}" }}': '{{ $.Values.orchestrator.sonataFlowDataIndexService }}',
+                '{{ "{{" }} postgresql_existingSecret {{ "}}" }}': '{{ $.Values.nameOverride }}-postgresql',
+            }
+            path = '/tmp/{{ $item.project }}/{{ $item1 }}'
+            with open(path, 'r') as f:
+                content = f.read()
+            for k, v in substitutions.items():
+                content = content.replace(k, v)
+            with open(path, 'w') as f:
+                f.write(content)
+            PYEOF
+          when: r_needs_update_{{ $item1 | replace(".", "_") | replace("/", "_") }}.stdout != ""
 {{- end }}
 
         - name: Add new files to the repository
@@ -102,12 +116,12 @@ data:
             cmd: "git add ."
           ignore_errors: true
 
-        - name: Commit changes to the repository
+        - name: Commit changes to the repository (skip if nothing changed)
           ansible.builtin.command:
             chdir: >-
               /tmp/{{ $item.project }}
             cmd: >-
-              git commit -a -m 'Updates for starting scenario.'
+              git diff --cached --quiet || git commit -m 'Updates for starting scenario.'
           ignore_errors: true
 
         - name: Push all changes back to the project repository
