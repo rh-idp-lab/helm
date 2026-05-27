@@ -1,4 +1,4 @@
-nameOverride: "rhdh"
+nameOverride: "backstage"
 
 gitops:
   namespace:
