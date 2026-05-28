@@ -30,6 +30,12 @@ spec:
       chart: {{ .Values.helm.chart }}
       targetRevision: {{ .Values.helm.version }}
       helm:
+        values: |
+          upstream:
+            postgresql:
+              primary:
+                podSecurityContext:
+                  fsGroup: 26
         valueFiles:
         - $values/{{ .Values.helm.values.git.path }}
     - repoURL: 'https://{{ .Values.helm.values.git.host }}/{{ .Values.helm.values.git.group }}/{{ .Values.helm.values.git.repo }}.git'
