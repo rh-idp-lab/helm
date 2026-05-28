@@ -30,7 +30,7 @@ gitops:
   host:
 
 kubernetes:
-  api:
+  api: https://kubernetes.default.svc
 
 oauth2:
   issuer:
