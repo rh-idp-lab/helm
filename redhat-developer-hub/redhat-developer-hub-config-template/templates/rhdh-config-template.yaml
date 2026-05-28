@@ -80,32 +80,52 @@ data:
 
         - name: Apply substitutions to /tmp/{{ $item.project }}/{{ $item1 }}
           ansible.builtin.shell: |
-            python3 - <<'PYEOF'
-            substitutions = {
-                '{% raw %}{{ cluster_subdomain }}{% endraw %}': '{{ $.Values.cluster.subdomain }}',
-                '{% raw %}{{ backstage_host }}{% endraw %}': '{{ $.Values.backstage.host }}',
-                '{% raw %}{{ gitlab_host }}{% endraw %}': '{{ $.Values.gitlab.host }}',
-                '{% raw %}{{ keycloak_host }}{% endraw %}': '{{ $.Values.keycloak.host }}',
-                '{% raw %}{{ keycloak_realm }}{% endraw %}': '{{ $.Values.keycloak.realm }}',
-                '{% raw %}{{ keycloak_login_realm }}{% endraw %}': '{{ $.Values.keycloak.loginRealm }}',
-                '{% raw %}{{ keycloak_client_id }}{% endraw %}': '{{ $.Values.keycloak.clientId }}',
-                '{% raw %}{{ keycloak_client_secret }}{% endraw %}': '{{ $.Values.keycloak.clientSecret }}',
-                '{% raw %}{{ argocd_host }}{% endraw %}': '{{ $.Values.gitops.host }}',
-                '{% raw %}{{ kubernetes_api_url }}{% endraw %}': '{{ $.Values.kubernetes.api }}',
-                '{% raw %}{{ backstage_backend_secret }}{% endraw %}': '{{ randAlphaNum 24 | b64enc }}',
-                '{% raw %}{{ oauth2_proxy_cookie_secret }}{% endraw %}': '{{ randAlpha 32 | lower | b64enc }}',
-                '{% raw %}{{ oauth2_proxy_oidc_issuer }}{% endraw %}': '{{ $.Values.oauth2.issuer }}',
-                '{% raw %}{{ orchestrator_sonataflow_data_index_service }}{% endraw %}': '{{ $.Values.orchestrator.sonataFlowDataIndexService }}',
-                '{% raw %}{{ postgresql_existingSecret }}{% endraw %}': '{{ $.Values.nameOverride }}-postgresql',
-            }
+            python3 -c "
+            import os
+            ob = chr(123)*2
+            cb = chr(125)*2
+            def p(name): return ob + ' ' + name + ' ' + cb
+            replacements = [
+                (p('cluster_subdomain'),                       os.environ['V_CLUSTER_SUBDOMAIN']),
+                (p('backstage_host'),                          os.environ['V_BACKSTAGE_HOST']),
+                (p('gitlab_host'),                             os.environ['V_GITLAB_HOST']),
+                (p('keycloak_host'),                           os.environ['V_KEYCLOAK_HOST']),
+                (p('keycloak_realm'),                          os.environ['V_KEYCLOAK_REALM']),
+                (p('keycloak_login_realm'),                    os.environ['V_KEYCLOAK_LOGIN_REALM']),
+                (p('keycloak_client_id'),                      os.environ['V_KEYCLOAK_CLIENT_ID']),
+                (p('keycloak_client_secret'),                  os.environ['V_KEYCLOAK_CLIENT_SECRET']),
+                (p('argocd_host'),                             os.environ['V_ARGOCD_HOST']),
+                (p('kubernetes_api_url'),                      os.environ['V_KUBERNETES_API_URL']),
+                (p('backstage_backend_secret'),                os.environ['V_BACKEND_SECRET']),
+                (p('oauth2_proxy_cookie_secret'),              os.environ['V_COOKIE_SECRET']),
+                (p('oauth2_proxy_oidc_issuer'),                os.environ['V_OIDC_ISSUER']),
+                (p('orchestrator_sonataflow_data_index_service'), os.environ['V_SONATAFLOW']),
+                (p('postgresql_existingSecret'),               os.environ['V_PG_SECRET']),
+            ]
             path = '/tmp/{{ $item.project }}/{{ $item1 }}'
-            with open(path, 'r') as f:
-                content = f.read()
-            for k, v in substitutions.items():
-                content = content.replace(k, v)
+            with open(path) as f:
+                c = f.read()
+            for k, v in replacements:
+                c = c.replace(k, v)
             with open(path, 'w') as f:
-                f.write(content)
-            PYEOF
+                f.write(c)
+            "
+          environment:
+            V_CLUSTER_SUBDOMAIN:  "{{ $.Values.cluster.subdomain }}"
+            V_BACKSTAGE_HOST:     "{{ $.Values.backstage.host }}"
+            V_GITLAB_HOST:        "{{ $.Values.gitlab.host }}"
+            V_KEYCLOAK_HOST:      "{{ $.Values.keycloak.host }}"
+            V_KEYCLOAK_REALM:     "{{ $.Values.keycloak.realm }}"
+            V_KEYCLOAK_LOGIN_REALM: "{{ $.Values.keycloak.loginRealm }}"
+            V_KEYCLOAK_CLIENT_ID: "{{ $.Values.keycloak.clientId }}"
+            V_KEYCLOAK_CLIENT_SECRET: "{{ $.Values.keycloak.clientSecret }}"
+            V_ARGOCD_HOST:        "{{ $.Values.gitops.host }}"
+            V_KUBERNETES_API_URL: "{{ $.Values.kubernetes.api }}"
+            V_BACKEND_SECRET:     "{{ randAlphaNum 24 | b64enc }}"
+            V_COOKIE_SECRET:      "{{ randAlpha 32 | lower | b64enc }}"
+            V_OIDC_ISSUER:        "{{ $.Values.oauth2.issuer }}"
+            V_SONATAFLOW:         "{{ $.Values.orchestrator.sonataFlowDataIndexService }}"
+            V_PG_SECRET:          "{{ $.Values.nameOverride }}-postgresql"
           when: r_needs_update_{{ $item1 | replace "." "_" | replace "/" "_" }}.stdout != ""
 {{- end }}
 
