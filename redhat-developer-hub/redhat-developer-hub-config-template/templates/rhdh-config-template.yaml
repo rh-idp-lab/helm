@@ -75,7 +75,7 @@ data:
         - name: Check if {{ $item1 }} still has unresolved placeholders
           ansible.builtin.shell: >-
             grep -l '{{ "{{" }} cluster_subdomain {{ "}}" }}' /tmp/{{ $item.project }}/{{ $item1 }} || true
-          register: r_needs_update_{{ $item1 | replace(".", "_") | replace("/", "_") }}
+          register: r_needs_update_{{ $item1 | replace "." "_" | replace "/" "_" }}
           changed_when: false
 
         - name: Apply substitutions to /tmp/{{ $item.project }}/{{ $item1 }}
@@ -106,7 +106,7 @@ data:
             with open(path, 'w') as f:
                 f.write(content)
             PYEOF
-          when: r_needs_update_{{ $item1 | replace(".", "_") | replace("/", "_") }}.stdout != ""
+          when: r_needs_update_{{ $item1 | replace "." "_" | replace "/" "_" }}.stdout != ""
 {{- end }}
 
         - name: Add new files to the repository
