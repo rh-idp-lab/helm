@@ -82,21 +82,21 @@ data:
           ansible.builtin.shell: |
             python3 - <<'PYEOF'
             substitutions = {
-                '{{ "{{" }} cluster_subdomain {{ "}}" }}': '{{ $.Values.cluster.subdomain }}',
-                '{{ "{{" }} backstage_host {{ "}}" }}': '{{ $.Values.backstage.host }}',
-                '{{ "{{" }} gitlab_host {{ "}}" }}': '{{ $.Values.gitlab.host }}',
-                '{{ "{{" }} keycloak_host {{ "}}" }}': '{{ $.Values.keycloak.host }}',
-                '{{ "{{" }} keycloak_realm {{ "}}" }}': '{{ $.Values.keycloak.realm }}',
-                '{{ "{{" }} keycloak_login_realm {{ "}}" }}': '{{ $.Values.keycloak.loginRealm }}',
-                '{{ "{{" }} keycloak_client_id {{ "}}" }}': '{{ $.Values.keycloak.clientId }}',
-                '{{ "{{" }} keycloak_client_secret {{ "}}" }}': '{{ $.Values.keycloak.clientSecret }}',
-                '{{ "{{" }} argocd_host {{ "}}" }}': '{{ $.Values.gitops.host }}',
-                '{{ "{{" }} kubernetes_api_url {{ "}}" }}': '{{ $.Values.kubernetes.api }}',
-                '{{ "{{" }} backstage_backend_secret {{ "}}" }}': '{{ randAlphaNum 24 | b64enc }}',
-                '{{ "{{" }} oauth2_proxy_cookie_secret {{ "}}" }}': '{{ randAlpha 32 | lower | b64enc }}',
-                '{{ "{{" }} oauth2_proxy_oidc_issuer {{ "}}" }}': '{{ $.Values.oauth2.issuer }}',
-                '{{ "{{" }} orchestrator_sonataflow_data_index_service {{ "}}" }}': '{{ $.Values.orchestrator.sonataFlowDataIndexService }}',
-                '{{ "{{" }} postgresql_existingSecret {{ "}}" }}': '{{ $.Values.nameOverride }}-postgresql',
+                '{% raw %}{{ cluster_subdomain }}{% endraw %}': '{{ $.Values.cluster.subdomain }}',
+                '{% raw %}{{ backstage_host }}{% endraw %}': '{{ $.Values.backstage.host }}',
+                '{% raw %}{{ gitlab_host }}{% endraw %}': '{{ $.Values.gitlab.host }}',
+                '{% raw %}{{ keycloak_host }}{% endraw %}': '{{ $.Values.keycloak.host }}',
+                '{% raw %}{{ keycloak_realm }}{% endraw %}': '{{ $.Values.keycloak.realm }}',
+                '{% raw %}{{ keycloak_login_realm }}{% endraw %}': '{{ $.Values.keycloak.loginRealm }}',
+                '{% raw %}{{ keycloak_client_id }}{% endraw %}': '{{ $.Values.keycloak.clientId }}',
+                '{% raw %}{{ keycloak_client_secret }}{% endraw %}': '{{ $.Values.keycloak.clientSecret }}',
+                '{% raw %}{{ argocd_host }}{% endraw %}': '{{ $.Values.gitops.host }}',
+                '{% raw %}{{ kubernetes_api_url }}{% endraw %}': '{{ $.Values.kubernetes.api }}',
+                '{% raw %}{{ backstage_backend_secret }}{% endraw %}': '{{ randAlphaNum 24 | b64enc }}',
+                '{% raw %}{{ oauth2_proxy_cookie_secret }}{% endraw %}': '{{ randAlpha 32 | lower | b64enc }}',
+                '{% raw %}{{ oauth2_proxy_oidc_issuer }}{% endraw %}': '{{ $.Values.oauth2.issuer }}',
+                '{% raw %}{{ orchestrator_sonataflow_data_index_service }}{% endraw %}': '{{ $.Values.orchestrator.sonataFlowDataIndexService }}',
+                '{% raw %}{{ postgresql_existingSecret }}{% endraw %}': '{{ $.Values.nameOverride }}-postgresql',
             }
             path = '/tmp/{{ $item.project }}/{{ $item1 }}'
             with open(path, 'r') as f:
