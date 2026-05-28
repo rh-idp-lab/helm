@@ -34,7 +34,7 @@ spec:
           upstream:
             postgresql:
               volumePermissions:
-                enabled: true
+                enabled: false
               primary:
                 podSecurityContext:
                   enabled: true
