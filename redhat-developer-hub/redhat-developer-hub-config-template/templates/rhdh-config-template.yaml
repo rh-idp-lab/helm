@@ -137,11 +137,10 @@ data:
           ignore_errors: true
 
         - name: Commit changes to the repository (skip if nothing changed)
-          ansible.builtin.command:
-            chdir: >-
-              /tmp/{{ $item.project }}
+          ansible.builtin.shell:
             cmd: >-
               git diff --cached --quiet || git commit -m 'Updates for starting scenario.'
+            chdir: /tmp/{{ $item.project }}
           ignore_errors: true
 
         - name: Push all changes back to the project repository
