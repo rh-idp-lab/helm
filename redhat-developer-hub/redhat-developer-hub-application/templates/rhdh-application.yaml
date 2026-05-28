@@ -33,8 +33,11 @@ spec:
         values: |
           upstream:
             postgresql:
+              volumePermissions:
+                enabled: true
               primary:
                 podSecurityContext:
+                  enabled: true
                   fsGroup: 26
         valueFiles:
         - $values/{{ .Values.helm.values.git.path }}
