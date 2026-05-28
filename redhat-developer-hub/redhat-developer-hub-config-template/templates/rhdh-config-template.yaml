@@ -74,7 +74,7 @@ data:
 
         - name: Check if {{ $item1 }} still has unresolved placeholders
           ansible.builtin.shell: >-
-            grep -l '{{ "{{" }} cluster_subdomain {{ "}}" }}' /tmp/{{ $item.project }}/{{ $item1 }} || true
+            grep -l 'cluster_subdomain' /tmp/{{ $item.project }}/{{ $item1 }} || true
           register: r_needs_update_{{ $item1 | replace "." "_" | replace "/" "_" }}
           changed_when: false
 
