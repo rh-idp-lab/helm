@@ -81,7 +81,7 @@ data:
         - name: Apply substitutions to /tmp/{{ $item.project }}/{{ $item1 }}
           ansible.builtin.shell: |
             python3 -c "
-            import os
+            import os, re
             ob = chr(123)*2
             cb = chr(125)*2
             def p(name): return ob + ' ' + name + ' ' + cb
@@ -107,6 +107,8 @@ data:
                 c = f.read()
             for k, v in replacements:
                 c = c.replace(k, v)
+            # Unescape Jinja2-escaped Helm expressions: {{ 'X' }} -> X
+            c = re.sub(re.escape(ob) + r\" '(.+?)' \" + re.escape(cb), r'\1', c)
             with open(path, 'w') as f:
                 f.write(c)
             "
