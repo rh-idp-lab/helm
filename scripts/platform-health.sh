@@ -50,15 +50,15 @@ check_namespace_health() {
 
   # Get all pods
   local all_pods
-  all_pods=$(oc get pods -n "$namespace" --no-headers 2>/dev/null)
+  all_pods=$(oc get pods -n "$namespace" --no-headers 2>/dev/null || true)
 
-  local total_pods
-  total_pods=$(echo "$all_pods" | grep -c . 2>/dev/null || echo 0)
-
-  if [ "$total_pods" -eq 0 ]; then
+  if [ -z "$all_pods" ]; then
     echo -e "${YELLOW}⚪ $name${NC} - No pods found (deployment pending)"
     return
   fi
+
+  local total_pods
+  total_pods=$(echo "$all_pods" | wc -l | tr -d ' ')
 
   # Count healthy pods: Running (with all containers ready) + Completed + Succeeded
   local running_ready
