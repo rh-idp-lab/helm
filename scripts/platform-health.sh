@@ -79,7 +79,7 @@ check_namespace_health() {
       detail="${detail}, ${completed} completed"
     fi
     echo -e "${GREEN}✅ $name${NC} - All healthy (${detail})"
-    ((HEALTHY_COMPONENTS++))
+    HEALTHY_COMPONENTS=$((HEALTHY_COMPONENTS + 1))
   else
     echo -e "${RED}❌ $name${NC} - ${unhealthy_pods} pod(s) unhealthy (${healthy_pods}/${total_pods} ok)"
 
