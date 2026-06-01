@@ -15,6 +15,13 @@ rhdh:
         branch: main
         templates:
           - values.yaml
+      - project: rhdh-templates
+        branch: main
+        templates:
+          - scaffolder-templates/quarkus-ai/template.yaml
+          - scaffolder-templates/quarkus-postgresql/template.yaml
+          - scaffolder-templates/quarkus-with-spring-postgresql/template.yaml
+          - scaffolder-templates/fight-ui/template.yaml
 
 backstage:
   host:

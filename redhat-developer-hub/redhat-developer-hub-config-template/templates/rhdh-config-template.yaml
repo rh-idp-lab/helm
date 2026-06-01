@@ -87,6 +87,7 @@ data:
             def p(name): return ob + ' ' + name + ' ' + cb
             replacements = [
                 (p('cluster_subdomain'),                       os.environ['V_CLUSTER_SUBDOMAIN']),
+                (p('quay_host'),                               os.environ['V_QUAY_HOST']),
                 (p('backstage_host'),                          os.environ['V_BACKSTAGE_HOST']),
                 (p('gitlab_host'),                             os.environ['V_GITLAB_HOST']),
                 (p('keycloak_host'),                           os.environ['V_KEYCLOAK_HOST']),
@@ -114,6 +115,7 @@ data:
             "
           environment:
             V_CLUSTER_SUBDOMAIN:  "{{ $.Values.cluster.subdomain }}"
+            V_QUAY_HOST:          "quay.{{ $.Values.cluster.subdomain }}"
             V_BACKSTAGE_HOST:     "{{ $.Values.backstage.host }}"
             V_GITLAB_HOST:        "{{ $.Values.gitlab.host }}"
             V_KEYCLOAK_HOST:      "{{ $.Values.keycloak.host }}"
