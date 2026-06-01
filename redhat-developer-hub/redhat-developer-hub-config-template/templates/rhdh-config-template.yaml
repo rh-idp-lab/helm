@@ -154,42 +154,4 @@ data:
             cmd: >-
               git push {{ "{{" }} _git_template_repo_url {{ "}}" }}
 
-#         - name: Add new files to the repository
-#           ansible.builtin.shell: |
-#               # Switch to branch (create if not exists, overwrite if needed)
-#               git checkout -B {{ $.Values.nameOverride }}
-
-#               # Stage and commit changes (skip commit if nothing changed)
-#               git add .
-#               git diff --cached --quiet || git commit -m 'Updates for starting scenario.'
-
-#               # Push to origin (set upstream only if not already set)
-#               if ! git rev-parse --abbrev-ref --symbolic-full-name "@{u}" >/dev/null 2>&1; then
-#                 git push -u origin "{{ $.Values.nameOverride }}"
-#               else
-#                 git push origin "{{ $.Values.nameOverride }}"
-#               fi
-
-#               # Push directly using full repo URL too
-#               git push {{ "{{" }} _git_template_repo_url {{ "}}" }} "{{ $.Values.nameOverride }}"
-#           args: 
-#             chdir: /tmp/{{ $item.project }}
-# #          ignore_errors: true
-
-#         # - name: Commit changes to the repository
-#         #   ansible.builtin.command:
-#         #     chdir: >-
-#         #       /tmp/{{ $item.project }}
-#         #     cmd: >-
-#         #       git commit -a -m 'Updates for starting scenario.'
-#         #   ignore_errors: true
-
-#         # - name: Push all changes back to the project repository
-#         #   ansible.builtin.shell:
-#         #     chdir: >-
-#         #       /tmp/{{ $item.project }}
-#         #     cmd: >-
-#         #       git push --set-upstream origin "{{ $.Values.nameOverride }}"
-#         #       git push {{ "{{" }} _git_template_repo_url {{ "}}" }} "{{ $.Values.nameOverride }}"
-
 {{- end }}
