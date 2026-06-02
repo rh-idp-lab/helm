@@ -160,11 +160,13 @@ data:
             headers:
               PRIVATE-TOKEN: '{{ "{{" }} root_token {{ "}}" }}'
             validate_certs: false
-            status_code: 201
-          retries: 100
+            status_code:
+              - 201
+              - 400
+          retries: 10
           delay: 5
           register: r_import
-          until: r_import.status == 201
+          until: r_import.status in [201, 400]
           loop:
 {{- range $item1 := $item.repo }}
             - name: {{ $item1.name }}
@@ -238,11 +240,13 @@ data:
             headers:
               PRIVATE-TOKEN: '{{ "{{" }} root_token {{ "}}" }}'
             validate_certs: false
-            status_code: 201
+            status_code:
+              - 201
+              - 409
           register: r_group_user
-          retries: 100
+          retries: 5
           delay: 5
-          until: r_group_user.status == 201
+          until: r_group_user.status in [201, 409]
           loop: '{{ "{{" }} r_users.json {{ "}}" }}'
 {{- end }}
 {{- end }}
