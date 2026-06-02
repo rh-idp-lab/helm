@@ -103,11 +103,13 @@ data:
             headers:
               PRIVATE-TOKEN: '{{ "{{" }} root_token {{ "}}" }}'
             validate_certs: false
-            status_code: 201
+            status_code:
+              - 201
+              - 409
           register: r_user
-          retries: 100
+          retries: 10
           delay: 5
-          until: r_user.status == 201
+          until: r_user.status in [201, 409]
 {{- end }}
 
         - name: List users
