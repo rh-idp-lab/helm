@@ -45,6 +45,12 @@ oauth2:
 cluster:
   subdomain:
 
+quay:
+  project: quayadmin
+
+stackrox:
+  endpoint: central.stackrox.svc.cluster.local:443
+
 orchestrator:
   sonataFlowDataIndexService:
 
