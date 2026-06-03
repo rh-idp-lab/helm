@@ -42,4 +42,10 @@ server:
       cpu: 125m
       memory: 128Mi
 
-password: 
+password:
+
+rbac:
+  adminUsers:
+    - user1
+    - user2
+    - user3

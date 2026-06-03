@@ -22,6 +22,9 @@ spec:
     defaultPolicy: role:readonly
     policy: |
       g, cluster-admins, role:admin
+      {{- range .Values.rbac.adminUsers }}
+      g, {{ . }}, role:admin
+      {{- end }}
   repo:
     resources:
       {{- toYaml .Values.repo.resources | nindent 6 }}
