@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Statuses considered healthy (running or finished successfully)
 HEALTHY_STATUSES="Running|Completed|Succeeded"
 
-# Component namespaces
+# Component namespaces (lookup map)
 declare -A COMPONENTS=(
   ["OpenShift GitOps"]="openshift-gitops"
   ["GitLab"]="gitlab"
@@ -28,6 +28,21 @@ declare -A COMPONENTS=(
   ["Dev Spaces"]="openshift-devspaces"
   ["Trusted Artifact Signer"]="trusted-artifact-signer"
   ["Red Hat Developer Hub"]="rhdh"
+)
+
+# Display order (bash associative arrays don't preserve insertion order)
+COMPONENTS_ORDER=(
+  "OpenShift GitOps"
+  "GitLab"
+  "Vault"
+  "Keycloak"
+  "OpenShift Pipelines"
+  "Red Hat Quay"
+  "External Secrets"
+  "RHDH GitOps"
+  "Dev Spaces"
+  "Trusted Artifact Signer"
+  "Red Hat Developer Hub"
 )
 
 echo -e "${BLUE}========================================${NC}"
@@ -100,8 +115,8 @@ check_namespace_health() {
   fi
 }
 
-# Check each component
-for component in "${!COMPONENTS[@]}"; do
+# Check each component in defined order
+for component in "${COMPONENTS_ORDER[@]}"; do
   check_namespace_health "$component" "${COMPONENTS[$component]}"
 done
 
