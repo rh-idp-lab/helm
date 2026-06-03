@@ -15,7 +15,7 @@ rhdh:
         branch: main
         templates:
           - values.yaml
-      - project: rhdh-templates
+      - project: opencodequest-templates
         branch: main
         templates:
           - scaffolder-templates/quarkus-ai/template.yaml
