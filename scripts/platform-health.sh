@@ -166,11 +166,73 @@ for component in "${COMPONENTS_ORDER[@]}"; do
   check_namespace_health "$component" "${COMPONENTS[$component]}"
 done
 
+check_rhdh_templates() {
+  TOTAL_CONFIGS=$((TOTAL_CONFIGS + 1))
+  local label="RHDH — Software Templates in catalog"
+
+  if ! oc get namespace rhdh &>/dev/null; then
+    echo -e "${YELLOW}⚪ $label${NC} - Developer Hub not deployed yet"
+    return
+  fi
+
+  local rhdh_host
+  rhdh_host=$(oc get route backstage-rhdh -n rhdh -o jsonpath='{.spec.host}' 2>/dev/null)
+  if [ -z "$rhdh_host" ]; then
+    echo -e "${YELLOW}⚪ $label${NC} - Developer Hub route not found"
+    return
+  fi
+
+  # Get common_password from Vault to authenticate against Keycloak
+  local vault_token common_pass keycloak_host access_token template_count
+  set +e
+
+  vault_token=$(oc get secret vault-token -n vault \
+    -o jsonpath='{.data.token}' 2>/dev/null | base64 -d 2>/dev/null)
+
+  common_pass=$(oc exec -n vault vault-0 -- \
+    env VAULT_TOKEN="$vault_token" vault kv get -field=password \
+    kv/secrets/rhdh/common_password 2>/dev/null | tr -d '[:space:]')
+
+  keycloak_host=$(oc get route keycloak -n keycloak \
+    -o jsonpath='{.spec.host}' 2>/dev/null)
+
+  # Get a user token via Keycloak password grant (user1 / common_password)
+  access_token=$(curl -sk -X POST \
+    "https://${keycloak_host}/realms/sso/protocol/openid-connect/token" \
+    -d "client_id=backstage&client_secret=${common_pass}&username=user1&password=${common_pass}&grant_type=password" \
+    2>/dev/null \
+    | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('access_token',''))" 2>/dev/null)
+
+  if [ -z "$access_token" ]; then
+    echo -e "${YELLOW}⚪ $label${NC} - Could not authenticate (Keycloak or RHDH not ready)"
+    set -e
+    return
+  fi
+
+  # Query Backstage catalog for Template entities
+  template_count=$(curl -sk \
+    -H "Authorization: Bearer $access_token" \
+    "https://${rhdh_host}/api/catalog/entities?filter=kind=Template&limit=5" \
+    2>/dev/null \
+    | python3 -c "import sys,json; items=json.load(sys.stdin); print(len(items) if isinstance(items, list) else 0)" 2>/dev/null)
+
+  set -e
+
+  if [ -n "$template_count" ] && [ "$template_count" -gt 0 ] 2>/dev/null; then
+    echo -e "${GREEN}✅ $label${NC} - ${template_count} template(s) registered"
+    HEALTHY_CONFIGS=$((HEALTHY_CONFIGS + 1))
+  else
+    echo -e "${RED}❌ $label${NC} - No templates found in catalog"
+    echo -e "   ${YELLOW}Fix:${NC} Import templates in RHDH (Module 6 → Import Software Templates)"
+  fi
+}
+
 # Configuration checks
 echo ""
 echo -e "${BLUE}--- Configuration Checks ---${NC}"
-check_vault_secret "kv/secrets/rhdh/common_password" "Vault — common_password secret"
-check_vault_secret "kv/secrets/rhdh/gitlab"          "Vault — GitLab token secret"
+check_vault_secret    "kv/secrets/rhdh/common_password" "Vault — common_password secret"
+check_vault_secret    "kv/secrets/rhdh/gitlab"          "Vault — GitLab token secret"
+check_rhdh_templates
 
 echo ""
 echo -e "${BLUE}========================================${NC}"
