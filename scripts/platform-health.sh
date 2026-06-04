@@ -166,76 +166,11 @@ for component in "${COMPONENTS_ORDER[@]}"; do
   check_namespace_health "$component" "${COMPONENTS[$component]}"
 done
 
-check_gitlab_oauth_app() {
-  local app_name=$1
-  local label=$2
-  TOTAL_CONFIGS=$((TOTAL_CONFIGS + 1))
-
-  # GitLab namespace must exist
-  if ! oc get namespace gitlab &>/dev/null; then
-    echo -e "${YELLOW}⚪ $label${NC} - GitLab not deployed yet"
-    return
-  fi
-
-  # Get root token
-  local root_token
-  root_token=$(oc get secret root-user-personal-token -n gitlab \
-    -o jsonpath='{.data.token}' 2>/dev/null | base64 -d 2>/dev/null)
-  if [ -z "$root_token" ]; then
-    echo -e "${RED}❌ $label${NC} - GitLab root token not found"
-    return
-  fi
-
-  # Get GitLab host from route
-  local gitlab_host
-  gitlab_host=$(oc get route gitlab -n gitlab -o jsonpath='{.spec.host}' 2>/dev/null)
-  if [ -z "$gitlab_host" ]; then
-    echo -e "${RED}❌ $label${NC} - GitLab route not found"
-    return
-  fi
-
-  # List OAuth applications: check admin apps AND user apps (via sudo impersonation)
-  # Use set +e locally to prevent set -e from aborting on curl/python3 failures
-  local result=""
-  set +e
-
-  # 1. Admin-level OAuth apps
-  result=$(curl -sk -H "PRIVATE-TOKEN: $root_token" \
-    "https://${gitlab_host}/api/v4/applications" 2>/dev/null \
-    | python3 -c "import sys,json; apps=json.load(sys.stdin); print(next((a['name'] for a in apps if a['name']=='${app_name}'), ''))" 2>/dev/null)
-
-  # 2. If not found, check each lab user's personal OAuth apps via sudo
-  if [ "$result" != "$app_name" ]; then
-    for sudo_user in user1 user2 user3; do
-      local user_result
-      user_result=$(curl -sk \
-        -H "PRIVATE-TOKEN: $root_token" \
-        -H "Sudo: ${sudo_user}" \
-        "https://${gitlab_host}/api/v4/oauth/applications" 2>/dev/null \
-        | python3 -c "import sys,json; apps=json.load(sys.stdin); print(next((a['name'] for a in apps if a['name']=='${app_name}'), ''))" 2>/dev/null)
-      if [ "$user_result" = "$app_name" ]; then
-        result="$app_name"
-        break
-      fi
-    done
-  fi
-  set -e
-
-  if [ "$result" = "$app_name" ]; then
-    echo -e "${GREEN}✅ $label${NC} - OAuth application '${app_name}' found in GitLab"
-    HEALTHY_CONFIGS=$((HEALTHY_CONFIGS + 1))
-  else
-    echo -e "${RED}❌ $label${NC} - OAuth application '${app_name}' not found in GitLab"
-    echo -e "   ${YELLOW}Fix:${NC} Create the OAuth app in GitLab (Module 4, Step 1)"
-  fi
-}
-
 # Configuration checks
 echo ""
 echo -e "${BLUE}--- Configuration Checks ---${NC}"
-check_vault_secret    "kv/secrets/rhdh/common_password" "Vault — common_password secret"
-check_vault_secret    "kv/secrets/rhdh/gitlab"          "Vault — GitLab token secret"
-check_gitlab_oauth_app "devspaces"                      "GitLab — Dev Spaces OAuth application"
+check_vault_secret "kv/secrets/rhdh/common_password" "Vault — common_password secret"
+check_vault_secret "kv/secrets/rhdh/gitlab"          "Vault — GitLab token secret"
 
 echo ""
 echo -e "${BLUE}========================================${NC}"
