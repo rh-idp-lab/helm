@@ -191,11 +191,29 @@ check_gitlab_oauth_app() {
     return
   fi
 
-  # List OAuth applications (admin API)
-  local result
+  # List OAuth applications: check admin apps AND user apps (via sudo impersonation)
+  local result=""
+
+  # 1. Admin-level OAuth apps
   result=$(curl -sk -H "PRIVATE-TOKEN: $root_token" \
     "https://${gitlab_host}/api/v4/applications" 2>/dev/null \
     | python3 -c "import sys,json; apps=json.load(sys.stdin); print(next((a['name'] for a in apps if a['name']=='${app_name}'), ''))" 2>/dev/null)
+
+  # 2. If not found, check each lab user's personal OAuth apps via sudo
+  if [ "$result" != "$app_name" ]; then
+    for sudo_user in user1 user2 user3; do
+      local user_result
+      user_result=$(curl -sk \
+        -H "PRIVATE-TOKEN: $root_token" \
+        -H "Sudo: ${sudo_user}" \
+        "https://${gitlab_host}/api/v4/oauth/applications" 2>/dev/null \
+        | python3 -c "import sys,json; apps=json.load(sys.stdin); print(next((a['name'] for a in apps if a['name']=='${app_name}'), ''))" 2>/dev/null)
+      if [ "$user_result" = "$app_name" ]; then
+        result="$app_name"
+        break
+      fi
+    done
+  fi
 
   if [ "$result" = "$app_name" ]; then
     echo -e "${GREEN}✅ $label${NC} - OAuth application '${app_name}' found in GitLab"
