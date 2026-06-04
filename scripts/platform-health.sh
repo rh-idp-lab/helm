@@ -146,10 +146,13 @@ check_vault_secret() {
 
   # Try to read the secret
   local result
+  set +e
   result=$(oc exec -n vault vault-0 -- env VAULT_TOKEN="$vault_token" \
     vault kv get -format=json "$secret_path" 2>/dev/null)
+  local vault_exit=$?
+  set -e
 
-  if [ $? -eq 0 ] && [ -n "$result" ]; then
+  if [ $vault_exit -eq 0 ] && [ -n "$result" ]; then
     echo -e "${GREEN}✅ $label${NC} - Secret found (${secret_path})"
     HEALTHY_CONFIGS=$((HEALTHY_CONFIGS + 1))
   else
@@ -192,7 +195,9 @@ check_gitlab_oauth_app() {
   fi
 
   # List OAuth applications: check admin apps AND user apps (via sudo impersonation)
+  # Use set +e locally to prevent set -e from aborting on curl/python3 failures
   local result=""
+  set +e
 
   # 1. Admin-level OAuth apps
   result=$(curl -sk -H "PRIVATE-TOKEN: $root_token" \
@@ -214,6 +219,7 @@ check_gitlab_oauth_app() {
       fi
     done
   fi
+  set -e
 
   if [ "$result" = "$app_name" ]; then
     echo -e "${GREEN}✅ $label${NC} - OAuth application '${app_name}' found in GitLab"
