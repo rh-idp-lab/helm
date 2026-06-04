@@ -57,6 +57,9 @@ spec:
       resources:
         {{- toYaml .Values.dex.resources | nindent 8 }}
     provider: dex    
+  namespaceManagement:
+    - name: "workshop*"
+      allowManagedBy: true
   tls:
     ca: {}
 

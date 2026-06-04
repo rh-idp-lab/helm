@@ -49,3 +49,9 @@ rbac:
     - user1
     - user2
     - user3
+
+workshop:
+  namespaces:
+    - workshop-dev
+    - workshop-preprod
+    - workshop-prod

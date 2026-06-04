@@ -1,0 +1,15 @@
+{{- range .Values.workshop.namespaces }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ . }}
+---
+apiVersion: argoproj.io/v1beta1
+kind: NamespaceManagement
+metadata:
+  name: {{ . }}
+  namespace: {{ . }}
+spec:
+  managedBy: {{ include "gitops.fullname" $ }}
+{{- end }}
