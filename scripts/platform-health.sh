@@ -52,6 +52,8 @@ echo ""
 
 TOTAL_COMPONENTS=${#COMPONENTS[@]}
 HEALTHY_COMPONENTS=0
+HEALTHY_CONFIGS=0
+TOTAL_CONFIGS=0
 
 check_namespace_health() {
   local name=$1
@@ -115,25 +117,118 @@ check_namespace_health() {
   fi
 }
 
+check_vault_secret() {
+  local secret_path=$1
+  local label=$2
+  TOTAL_CONFIGS=$((TOTAL_CONFIGS + 1))
+
+  # Vault namespace must exist
+  if ! oc get namespace vault &>/dev/null; then
+    echo -e "${YELLOW}⚪ $label${NC} - Vault not deployed yet"
+    return
+  fi
+
+  # Vault pod must be running
+  local vault_pod
+  vault_pod=$(oc get pod vault-0 -n vault --no-headers 2>/dev/null | awk '{print $3}')
+  if [ "$vault_pod" != "Running" ]; then
+    echo -e "${YELLOW}⚪ $label${NC} - Vault pod not ready"
+    return
+  fi
+
+  # Get Vault token
+  local vault_token
+  vault_token=$(oc get secret vault-token -n vault -o jsonpath='{.data.token}' 2>/dev/null | base64 -d 2>/dev/null)
+  if [ -z "$vault_token" ]; then
+    echo -e "${RED}❌ $label${NC} - Vault token secret not found"
+    return
+  fi
+
+  # Try to read the secret
+  local result
+  result=$(oc exec -n vault vault-0 -- env VAULT_TOKEN="$vault_token" \
+    vault kv get -format=json "$secret_path" 2>/dev/null)
+
+  if [ $? -eq 0 ] && [ -n "$result" ]; then
+    echo -e "${GREEN}✅ $label${NC} - Secret found (${secret_path})"
+    HEALTHY_CONFIGS=$((HEALTHY_CONFIGS + 1))
+  else
+    echo -e "${RED}❌ $label${NC} - Secret not found at ${secret_path}"
+    echo -e "   ${YELLOW}Fix:${NC} Run the Vault secrets step in Module 3"
+  fi
+}
+
 # Check each component in defined order
 for component in "${COMPONENTS_ORDER[@]}"; do
   check_namespace_health "$component" "${COMPONENTS[$component]}"
 done
 
+check_gitlab_oauth_app() {
+  local app_name=$1
+  local label=$2
+  TOTAL_CONFIGS=$((TOTAL_CONFIGS + 1))
+
+  # GitLab namespace must exist
+  if ! oc get namespace gitlab &>/dev/null; then
+    echo -e "${YELLOW}⚪ $label${NC} - GitLab not deployed yet"
+    return
+  fi
+
+  # Get root token
+  local root_token
+  root_token=$(oc get secret root-user-personal-token -n gitlab \
+    -o jsonpath='{.data.token}' 2>/dev/null | base64 -d 2>/dev/null)
+  if [ -z "$root_token" ]; then
+    echo -e "${RED}❌ $label${NC} - GitLab root token not found"
+    return
+  fi
+
+  # Get GitLab host from route
+  local gitlab_host
+  gitlab_host=$(oc get route gitlab -n gitlab -o jsonpath='{.spec.host}' 2>/dev/null)
+  if [ -z "$gitlab_host" ]; then
+    echo -e "${RED}❌ $label${NC} - GitLab route not found"
+    return
+  fi
+
+  # List OAuth applications (admin API)
+  local result
+  result=$(curl -sk -H "PRIVATE-TOKEN: $root_token" \
+    "https://${gitlab_host}/api/v4/applications" 2>/dev/null \
+    | python3 -c "import sys,json; apps=json.load(sys.stdin); print(next((a['name'] for a in apps if a['name']=='${app_name}'), ''))" 2>/dev/null)
+
+  if [ "$result" = "$app_name" ]; then
+    echo -e "${GREEN}✅ $label${NC} - OAuth application '${app_name}' found in GitLab"
+    HEALTHY_CONFIGS=$((HEALTHY_CONFIGS + 1))
+  else
+    echo -e "${RED}❌ $label${NC} - OAuth application '${app_name}' not found in GitLab"
+    echo -e "   ${YELLOW}Fix:${NC} Create the OAuth app in GitLab (Module 4, Step 1)"
+  fi
+}
+
+# Configuration checks
+echo ""
+echo -e "${BLUE}--- Configuration Checks ---${NC}"
+check_vault_secret    "kv/secrets/rhdh/common_password" "Vault — common_password secret"
+check_vault_secret    "kv/secrets/rhdh/gitlab"          "Vault — GitLab token secret"
+check_gitlab_oauth_app "devspaces"                      "GitLab — Dev Spaces OAuth application"
+
 echo ""
 echo -e "${BLUE}========================================${NC}"
 
-# Calculate health percentage
-HEALTH_PERCENT=$((HEALTHY_COMPONENTS * 100 / TOTAL_COMPONENTS))
+# Calculate health percentage (namespace components + config checks)
+TOTAL_ALL=$((TOTAL_COMPONENTS + TOTAL_CONFIGS))
+HEALTHY_ALL=$((HEALTHY_COMPONENTS + HEALTHY_CONFIGS))
+HEALTH_PERCENT=$((HEALTHY_ALL * 100 / TOTAL_ALL))
 
 if [ "$HEALTH_PERCENT" -eq 100 ]; then
-  echo -e "${GREEN}Platform Health: ${HEALTH_PERCENT}% (${HEALTHY_COMPONENTS}/${TOTAL_COMPONENTS} components healthy)${NC}"
+  echo -e "${GREEN}Platform Health: ${HEALTH_PERCENT}% (${HEALTHY_COMPONENTS}/${TOTAL_COMPONENTS} components, ${HEALTHY_CONFIGS}/${TOTAL_CONFIGS} config checks)${NC}"
   echo -e "${GREEN}✅ All components are healthy!${NC}"
 elif [ "$HEALTH_PERCENT" -ge 75 ]; then
-  echo -e "${YELLOW}Platform Health: ${HEALTH_PERCENT}% (${HEALTHY_COMPONENTS}/${TOTAL_COMPONENTS} components healthy)${NC}"
+  echo -e "${YELLOW}Platform Health: ${HEALTH_PERCENT}% (${HEALTHY_COMPONENTS}/${TOTAL_COMPONENTS} components, ${HEALTHY_CONFIGS}/${TOTAL_CONFIGS} config checks)${NC}"
   echo -e "${YELLOW}⚠️  Some components need attention.${NC}"
 else
-  echo -e "${RED}Platform Health: ${HEALTH_PERCENT}% (${HEALTHY_COMPONENTS}/${TOTAL_COMPONENTS} components healthy)${NC}"
+  echo -e "${RED}Platform Health: ${HEALTH_PERCENT}% (${HEALTHY_COMPONENTS}/${TOTAL_COMPONENTS} components, ${HEALTHY_CONFIGS}/${TOTAL_CONFIGS} config checks)${NC}"
   echo -e "${RED}❌ Multiple components are not healthy. Review deployment status.${NC}"
 fi
 
