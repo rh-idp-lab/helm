@@ -65,9 +65,9 @@ check_namespace_health() {
     return
   fi
 
-  # Get all pods
+  # Get all pods, excluding evicted pods
   local all_pods
-  all_pods=$(oc get pods -n "$namespace" --no-headers 2>/dev/null || true)
+  all_pods=$(oc get pods -n "$namespace" --no-headers 2>/dev/null | grep -v "Evicted" || true)
 
   if [ -z "$all_pods" ]; then
     echo -e "${YELLOW}⚪ $name${NC} - No pods found (deployment pending)"
