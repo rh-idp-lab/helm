@@ -240,9 +240,11 @@ check_rhdh_components() {
   count=$(_rhdh_count "$rhdh_host" "Component")
   if ! echo "$count" | grep -qE '^[0-9]+$'; then count=0; fi
 
-  if [ "$count" -gt 0 ]; then
+  if [ "$count" -ge 2 ]; then
     echo -e "${GREEN}✅ $label${NC} - ${count} component(s) registered"
     HEALTHY_CONFIGS=$((HEALTHY_CONFIGS + 1))
+  elif [ "$count" -eq 1 ]; then
+    echo -e "${YELLOW}⚪ $label${NC} - ${count} component registered (expected at least 2: fight-ui and hero)"
   else
     echo -e "${YELLOW}⚪ $label${NC} - No components yet (expected after Challenge #9)"
   fi
