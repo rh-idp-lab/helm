@@ -166,6 +166,31 @@ for component in "${COMPONENTS_ORDER[@]}"; do
   check_namespace_health "$component" "${COMPONENTS[$component]}"
 done
 
+# Resolve RHDH host and return it (empty if not available)
+_rhdh_host() {
+  local host=""
+  host=$(oc get route backstage-developer-hub -n rhdh -o jsonpath='{.spec.host}' 2>/dev/null) || true
+  if [ -z "$host" ]; then
+    host=$(oc get route -n rhdh -o jsonpath='{.items[0].spec.host}' 2>/dev/null) || true
+  fi
+  echo "$host"
+}
+
+# Query RHDH catalog and return entity count for a given kind
+_rhdh_count() {
+  local host=$1 kind=$2
+  local api_token="mYsecretToK3n"
+  local response="" count=""
+  response=$(curl -sk --max-time 10 \
+    -H "Authorization: Bearer ${api_token}" \
+    "https://${host}/api/catalog/entities?filter=kind=${kind}&limit=100" \
+    2>/dev/null) || true
+  count=$(echo "$response" | \
+    python3 -c "import sys,json; items=json.load(sys.stdin); print(len(items) if isinstance(items,list) else 0)" \
+    2>/dev/null) || true
+  echo "$count"
+}
+
 check_rhdh_templates() {
   TOTAL_CONFIGS=$((TOTAL_CONFIGS + 1))
   local label="RHDH — Software Templates in catalog"
@@ -176,38 +201,50 @@ check_rhdh_templates() {
   fi
 
   local rhdh_host=""
-  rhdh_host=$(oc get route backstage-developer-hub -n rhdh -o jsonpath='{.spec.host}' 2>/dev/null) || true
-  if [ -z "$rhdh_host" ]; then
-    rhdh_host=$(oc get route -n rhdh -o jsonpath='{.items[0].spec.host}' 2>/dev/null) || true
-  fi
+  rhdh_host=$(_rhdh_host)
   if [ -z "$rhdh_host" ]; then
     echo -e "${YELLOW}⚪ $label${NC} - Developer Hub route not found"
     return
   fi
 
-  # Static token configured in developer-hub-config/values.yaml backend.auth.externalAccess
-  local api_token="mYsecretToK3n"
+  local count=""
+  count=$(_rhdh_count "$rhdh_host" "Template")
+  if ! echo "$count" | grep -qE '^[0-9]+$'; then count=0; fi
 
-  local catalog_response="" template_count=""
-  catalog_response=$(curl -sk --max-time 10 \
-    -H "Authorization: Bearer ${api_token}" \
-    "https://${rhdh_host}/api/catalog/entities?filter=kind=Template&limit=10" \
-    2>/dev/null) || true
-
-  template_count=$(echo "$catalog_response" | \
-    python3 -c "import sys,json; items=json.load(sys.stdin); print(len(items) if isinstance(items,list) else 0)" \
-    2>/dev/null) || true
-
-  if ! echo "$template_count" | grep -qE '^[0-9]+$'; then
-    template_count=0
-  fi
-
-  if [ "$template_count" -gt 0 ]; then
-    echo -e "${GREEN}✅ $label${NC} - ${template_count} template(s) registered"
+  if [ "$count" -gt 0 ]; then
+    echo -e "${GREEN}✅ $label${NC} - ${count} template(s) registered"
     HEALTHY_CONFIGS=$((HEALTHY_CONFIGS + 1))
   else
     echo -e "${RED}❌ $label${NC} - No templates found in catalog"
     echo -e "   ${YELLOW}Fix:${NC} Import templates in RHDH (Challenge #8 → Import Software Templates)"
+  fi
+}
+
+check_rhdh_components() {
+  TOTAL_CONFIGS=$((TOTAL_CONFIGS + 1))
+  local label="RHDH — Components in catalog"
+
+  if ! oc get namespace rhdh &>/dev/null; then
+    echo -e "${YELLOW}⚪ $label${NC} - Developer Hub not deployed yet"
+    return
+  fi
+
+  local rhdh_host=""
+  rhdh_host=$(_rhdh_host)
+  if [ -z "$rhdh_host" ]; then
+    echo -e "${YELLOW}⚪ $label${NC} - Developer Hub route not found"
+    return
+  fi
+
+  local count=""
+  count=$(_rhdh_count "$rhdh_host" "Component")
+  if ! echo "$count" | grep -qE '^[0-9]+$'; then count=0; fi
+
+  if [ "$count" -gt 0 ]; then
+    echo -e "${GREEN}✅ $label${NC} - ${count} component(s) registered"
+    HEALTHY_CONFIGS=$((HEALTHY_CONFIGS + 1))
+  else
+    echo -e "${YELLOW}⚪ $label${NC} - No components yet (expected after Challenge #9)"
   fi
 }
 
@@ -217,6 +254,7 @@ echo -e "${BLUE}--- Configuration Checks ---${NC}"
 check_vault_secret    "kv/secrets/rhdh/common_password" "Vault — common_password secret"
 check_vault_secret    "kv/secrets/rhdh/gitlab"          "Vault — GitLab token secret"
 check_rhdh_templates
+check_rhdh_components
 
 echo ""
 echo -e "${BLUE}========================================${NC}"
