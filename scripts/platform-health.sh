@@ -157,7 +157,7 @@ check_vault_secret() {
     HEALTHY_CONFIGS=$((HEALTHY_CONFIGS + 1))
   else
     echo -e "${RED}❌ $label${NC} - Secret not found at ${secret_path}"
-    echo -e "   ${YELLOW}Fix:${NC} Run the Vault secrets step in Module 3"
+    echo -e "   ${YELLOW}Fix:${NC} Run the Vault secrets step in Challenge #3"
   fi
 }
 
