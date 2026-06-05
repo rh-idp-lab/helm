@@ -166,97 +166,11 @@ for component in "${COMPONENTS_ORDER[@]}"; do
   check_namespace_health "$component" "${COMPONENTS[$component]}"
 done
 
-check_rhdh_templates() {
-  TOTAL_CONFIGS=$((TOTAL_CONFIGS + 1))
-  local label="RHDH — Software Templates in catalog"
-
-  if ! oc get namespace rhdh &>/dev/null; then
-    echo -e "${YELLOW}⚪ $label${NC} - Developer Hub not deployed yet"
-    return
-  fi
-
-  local rhdh_host=""
-  # Try known route names for RHDH (operator version dependent)
-  rhdh_host=$(oc get route backstage-developer-hub -n rhdh -o jsonpath='{.spec.host}' 2>/dev/null) || true
-  if [ -z "$rhdh_host" ]; then
-    rhdh_host=$(oc get route backstage -n rhdh -o jsonpath='{.spec.host}' 2>/dev/null) || true
-  fi
-  if [ -z "$rhdh_host" ]; then
-    # Fallback: pick the first route in the namespace
-    rhdh_host=$(oc get route -n rhdh -o jsonpath='{.items[0].spec.host}' 2>/dev/null) || true
-  fi
-  if [ -z "$rhdh_host" ]; then
-    echo -e "${YELLOW}⚪ $label${NC} - Developer Hub route not found"
-    return
-  fi
-
-  # Derive Keycloak host from the RHDH route (same cluster domain, sso. prefix)
-  local cluster_domain="${rhdh_host#backstage-rhdh.}"
-  local keycloak_host="sso.${cluster_domain}"
-
-  # Get common_password from Vault
-  local vault_token="" common_pass="" access_token="" template_count=""
-
-  vault_token=$(oc get secret vault-token -n vault \
-    -o jsonpath='{.data.token}' 2>/dev/null | base64 -d 2>/dev/null) || true
-
-  if [ -n "$vault_token" ]; then
-    common_pass=$(oc exec -n vault vault-0 -- \
-      env VAULT_TOKEN="$vault_token" vault kv get -field=password \
-      kv/secrets/rhdh/common_password 2>/dev/null | tr -d '[:space:]') || true
-  fi
-
-  if [ -z "$common_pass" ]; then
-    echo -e "${YELLOW}⚪ $label${NC} - Could not retrieve password from Vault"
-    return
-  fi
-
-  # Get a user token via Keycloak password grant
-  local token_response=""
-  token_response=$(curl -sk --max-time 10 -X POST \
-    "https://${keycloak_host}/realms/sso/protocol/openid-connect/token" \
-    -d "client_id=backstage&client_secret=${common_pass}&username=user1&password=${common_pass}&grant_type=password" \
-    2>/dev/null) || true
-
-  access_token=$(echo "$token_response" | \
-    python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('access_token',''))" 2>/dev/null) || true
-
-  if [ -z "$access_token" ]; then
-    echo -e "${YELLOW}⚪ $label${NC} - Could not authenticate against Keycloak"
-    return
-  fi
-
-  # Query Backstage catalog for Template entities
-  local catalog_response=""
-  catalog_response=$(curl -sk --max-time 10 \
-    -H "Authorization: Bearer $access_token" \
-    "https://${rhdh_host}/api/catalog/entities?filter=kind=Template&limit=10" \
-    2>/dev/null) || true
-
-  template_count=$(echo "$catalog_response" | \
-    python3 -c "import sys,json; items=json.load(sys.stdin); print(len(items) if isinstance(items,list) else 0)" \
-    2>/dev/null) || true
-
-  # Guard: ensure template_count is a valid integer
-  if ! echo "$template_count" | grep -qE '^[0-9]+$'; then
-    template_count=0
-  fi
-
-  if [ "$template_count" -gt 0 ]; then
-    echo -e "${GREEN}✅ $label${NC} - ${template_count} template(s) registered"
-    HEALTHY_CONFIGS=$((HEALTHY_CONFIGS + 1))
-  else
-    echo -e "${RED}❌ $label${NC} - No templates found in catalog"
-    echo -e "   ${YELLOW}Fix:${NC} Import templates in RHDH (Module 6 → Import Software Templates)"
-  fi
-}
-
 # Configuration checks
 echo ""
 echo -e "${BLUE}--- Configuration Checks ---${NC}"
 check_vault_secret    "kv/secrets/rhdh/common_password" "Vault — common_password secret"
 check_vault_secret    "kv/secrets/rhdh/gitlab"          "Vault — GitLab token secret"
-check_rhdh_templates
 
 echo ""
 echo -e "${BLUE}========================================${NC}"
