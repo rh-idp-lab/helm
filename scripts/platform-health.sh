@@ -176,10 +176,10 @@ check_rhdh_templates() {
   fi
 
   local rhdh_host=""
-  # Try known route names for RHDH (backstage or backstage-rhdh depending on operator version)
-  rhdh_host=$(oc get route backstage -n rhdh -o jsonpath='{.spec.host}' 2>/dev/null) || true
+  # Try known route names for RHDH (operator version dependent)
+  rhdh_host=$(oc get route backstage-developer-hub -n rhdh -o jsonpath='{.spec.host}' 2>/dev/null) || true
   if [ -z "$rhdh_host" ]; then
-    rhdh_host=$(oc get route backstage-rhdh -n rhdh -o jsonpath='{.spec.host}' 2>/dev/null) || true
+    rhdh_host=$(oc get route backstage -n rhdh -o jsonpath='{.spec.host}' 2>/dev/null) || true
   fi
   if [ -z "$rhdh_host" ]; then
     # Fallback: pick the first route in the namespace
