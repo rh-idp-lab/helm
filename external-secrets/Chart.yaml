@@ -1,14 +1,10 @@
 apiVersion: v2
 name: external-secrets
-description: A Helm chart for Kubernetes
+description: Red Hat External Secrets Operator (OLM) + Vault ClusterSecretStore
 type: application
-version: 0.1.0
+version: 0.2.0
 
 dependencies:
-  - name: external-secrets
-    alias: external-secrets
-    repository: https://charts.external-secrets.io
-    version: 0.9.2
   - name: vault-integration
     version: 0.1.0
     repository: file://vault-integration

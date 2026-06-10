@@ -1,10 +1,11 @@
-external-secrets:
-  installCRDs: true
-  securityContext:
-    runAsUser: null
-  certController:
-    securityContext:
-      runAsUser: null
-  webhook:
-    securityContext:
-      runAsUser: null
+operator:
+  channel: stable-v1
+  startingCSV: openshift-external-secrets-operator.v1.1.0
+  installPlanApproval: Automatic
+
+vault-integration:
+  vault:
+    namespace: vault
+    name: vault
+    auth:
+      namespace: default
