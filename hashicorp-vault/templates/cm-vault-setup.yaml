@@ -78,12 +78,16 @@ data:
           ansible.builtin.shell: |
             export SA_SECRET_NAME=$(oc get secrets -n default --output=json \
             | jq -r '.items[].metadata | select(.name|startswith("vault-auth-secret")).name')
+            export SA_JWT_TOKEN=$(oc get secret $SA_SECRET_NAME -n default \
+            --output 'go-template={{ "{{ \"{{\" }}" }} .data.token {{ "{{ \"}}\" }}" }}' | base64 --decode)
             export K8S_CA=$(oc get secret $SA_SECRET_NAME -n default \
             --output 'go-template={{ "{{ \"{{\" }}" }} index .data "ca.crt" {{ "{{ \"}}\" }}" }}' | base64 --decode)
             oc exec vault-0 -n {{ "{{" }} vault_namespace {{ "}}" }} -- vault auth enable kubernetes
             oc exec vault-0 -n {{ "{{" }} vault_namespace {{ "}}" }} -- vault write auth/kubernetes/config \
             kubernetes_host="https://kubernetes.default.svc:443" \
-            kubernetes_ca_cert="$K8S_CA"
+            kubernetes_ca_cert="$K8S_CA" \
+            token_reviewer_jwt="$SA_JWT_TOKEN" \
+            disable_iss_validation=true
 
         - name: Create role and service account authentication
           ansible.builtin.shell: |
