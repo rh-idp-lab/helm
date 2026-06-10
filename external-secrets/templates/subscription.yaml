@@ -3,8 +3,6 @@ kind: Subscription
 metadata:
   name: openshift-external-secrets-operator
   namespace: external-secrets-operator
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
   channel: {{ .Values.operator.channel }}
   installPlanApproval: {{ .Values.operator.installPlanApproval }}
