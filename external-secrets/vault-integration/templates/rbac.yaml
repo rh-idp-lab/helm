@@ -1,0 +1,29 @@
+---
+# Allows the ESO controller to read the Vault auth secret in the configured namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-secrets-vault-auth-reader
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+    resourceNames:
+      - {{ .Values.vault.name }}-auth-secret
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: external-secrets-vault-auth-reader
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-secrets-vault-auth-reader
+subjects:
+  - kind: ServiceAccount
+    name: external-secrets-operator-controller-manager
+    namespace: external-secrets-operator
