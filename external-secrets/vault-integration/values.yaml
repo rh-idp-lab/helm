@@ -1,6 +1,5 @@
 vault:
   namespace: vault
   name: vault
-  port: 8200
   auth:
     namespace: default
