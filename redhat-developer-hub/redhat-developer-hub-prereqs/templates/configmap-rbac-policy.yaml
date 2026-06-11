@@ -12,7 +12,4 @@ data:
     {{ $item }}
     {{- end }}
   rbac-conditional-policies.yaml: |
-    {{- range $item := .Values.rbacConditionalPolicies }}
-    ---
-    {{- toYaml $item | nindent 4 }}
-    {{- end }}   
+    {{- toYaml .Values.rbacConditionalPolicies | nindent 4 }}
