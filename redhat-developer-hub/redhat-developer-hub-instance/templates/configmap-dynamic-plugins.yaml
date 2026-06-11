@@ -11,7 +11,9 @@ data:
       - dynamic-plugins.default.yaml
     plugins:
 
-      # ── Kubernetes / OpenShift Topology — bundled in RHDH 1.9 ────────────────
+      # ── Kubernetes / OpenShift Topology ──────────────────────────────────────
+      # Chapter 2 (Red Hat supported) + Chapter 3 (Tech Preview) — bundled
+      # Ref: RHDH 1.9 dynamic plugins reference
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
@@ -19,40 +21,46 @@ data:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
         disabled: false
 
-      # ── OpenShift Pipelines (Tekton) — bundled in RHDH 1.9 ──────────────────
+      # ── OpenShift Pipelines (Tekton) ─────────────────────────────────────────
+      # Chapter 2 (Red Hat supported) — bundled, v3.33.3
       - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
         disabled: false
 
-      # ── ArgoCD — bundled in RHDH 1.9 ─────────────────────────────────────────
+      # ── ArgoCD ───────────────────────────────────────────────────────────────
+      # Chapter 2 (Red Hat supported) — bundled, v4.6.0
       - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend
         disabled: false
+      # Chapter 3 (Tech Preview) — bundled, v1.8.1
       - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
         disabled: false
 
-      # ── GitLab ────────────────────────────────────────────────────────────────
-      # Catalog / org / scaffolder modules: bundled in RHDH 1.9
+      # ── GitLab ───────────────────────────────────────────────────────────────
+      # Chapter 2 (Red Hat supported) + Chapter 3 (Tech Preview) — bundled
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
         disabled: false
-      # immobiliarelabs GitLab backend (MR/pipeline UI): community plugin, migrated to ghcr.io in RHDH 1.9
+      # Chapter 4.4 (community migrated to ghcr.io in RHDH 1.9) — v6.13.0
+      # Tag format: bs_<backstage-version>__<plugin-version> (RHDH 1.9 = Backstage 1.45.3)
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.45.3__6.13.0'
         disabled: false
 
-      # ── Keycloak — bundled in RHDH 1.9 ───────────────────────────────────────
+      # ── Keycloak ─────────────────────────────────────────────────────────────
+      # Chapter 2 (Red Hat supported) — bundled, v3.16.0
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
 
       # ── Quay ─────────────────────────────────────────────────────────────────
-      # Frontend: bundled in RHDH 1.9
+      # Chapter 2 (Red Hat supported) — bundled, v1.28.1
       - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
         disabled: false
-      # Backend: community plugin, migrated to ghcr.io in RHDH 1.9
+      # Chapter 4.4 (community migrated to ghcr.io in RHDH 1.9) — v1.10.1
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:bs_1.45.3__1.10.1'
         disabled: false
 
-      # ── RBAC — bundled in RHDH 1.9 ───────────────────────────────────────────
+      # ── RBAC ─────────────────────────────────────────────────────────────────
+      # Chapter 2 (Red Hat supported) — bundled, v1.47.4
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
         disabled: false
