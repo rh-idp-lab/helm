@@ -12,7 +12,7 @@ data:
     plugins:
 
       # ── Kubernetes / OpenShift Topology ──────────────────────────────────────
-      # Red Hat supported — bundled in RHDH 1.9 & 1.10 (./dynamic-plugins/dist/)
+      # Bundled in RHDH 1.10
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
@@ -21,50 +21,42 @@ data:
         disabled: false
 
       # ── OpenShift Pipelines (Tekton) ─────────────────────────────────────────
-      # Red Hat supported — bundled in RHDH 1.9; will move to ghcr.io in RHDH 1.10
-      # Future path: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:<tag>
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+      # Moved to ghcr.io in RHDH 1.10 — uses {{inherit}} for version resolution
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
 
       # ── ArgoCD ───────────────────────────────────────────────────────────────
-      # roadiehq backend: Red Hat supported — bundled in RHDH 1.9; will move to ghcr.io in RHDH 1.10
-      # Future path: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-argo-cd-backend:<tag>
-      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend
+      # Both plugins moved to ghcr.io in RHDH 1.10
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-argo-cd-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      # roadiehq scaffolder: Tech Preview — bundled in RHDH 1.9; will move to ghcr.io in RHDH 1.10
-      # Future path: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-argocd:<tag>
-      - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-argocd:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
 
       # ── GitLab ───────────────────────────────────────────────────────────────
-      # Catalog / org / scaffolder modules: Red Hat supported — bundled in RHDH 1.9 & 1.10
+      # Catalog / org / scaffolder modules: bundled in RHDH 1.10
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
         disabled: false
-      # immobiliarelabs GitLab backend (MR/pipeline UI): migrated to ghcr.io in RHDH 1.9
-      # Version tag format: bs_<backstage-version>__<plugin-version>  (e.g. bs_1.45.3__6.13.0 for RHDH 1.9)
-      # See: https://github.com/redhat-developer/rhdh-plugin-export-overlays
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.45.3__6.13.0
+      # immobiliarelabs GitLab backend (MR/pipeline UI): on ghcr.io since RHDH 1.9
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
 
       # ── Keycloak ─────────────────────────────────────────────────────────────
-      # Red Hat supported — bundled in RHDH 1.9 & 1.10 (./dynamic-plugins/dist/)
+      # Bundled in RHDH 1.10
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
 
       # ── Quay ─────────────────────────────────────────────────────────────────
-      # Frontend: Red Hat supported — bundled in RHDH 1.9; will move to ghcr.io in RHDH 1.10
-      # Future path: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:<tag>
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
+      # Both plugins moved to ghcr.io in RHDH 1.10
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      # Backend: migrated to ghcr.io in RHDH 1.9
-      - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:bs_1.45.3__1.10.1
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
 
       # ── RBAC ─────────────────────────────────────────────────────────────────
-      # Red Hat supported — bundled in RHDH 1.9 & 1.10
+      # Bundled in RHDH 1.10
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
         disabled: false
