@@ -20,13 +20,11 @@ data:
       - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
         disabled: false
 
-      # ── OpenShift Pipelines (Tekton) ─────────────────────────────────────────
-      # Moved to ghcr.io in RHDH 1.10 — uses {{inherit}} for version resolution
+      # ── OpenShift Pipelines (Tekton) — moved to ghcr.io in RHDH 1.10 ──────────
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
 
-      # ── ArgoCD ───────────────────────────────────────────────────────────────
-      # Both plugins moved to ghcr.io in RHDH 1.10
+      # ── ArgoCD — moved to ghcr.io in RHDH 1.10 ──────────────────────────────
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-argo-cd-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-argocd:{{ "{{" }}inherit{{ "}}" }}'
@@ -44,13 +42,11 @@ data:
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
 
-      # ── Keycloak ─────────────────────────────────────────────────────────────
-      # Bundled in RHDH 1.10
+      # ── Keycloak — bundled in RHDH 1.10 ──────────────────────────────────────
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
 
-      # ── Quay ─────────────────────────────────────────────────────────────────
-      # Both plugins moved to ghcr.io in RHDH 1.10
+      # ── Quay — moved to ghcr.io in RHDH 1.10 ────────────────────────────────
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:{{ "{{" }}inherit{{ "}}" }}'
