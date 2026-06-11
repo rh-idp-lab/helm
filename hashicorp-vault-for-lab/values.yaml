@@ -51,8 +51,8 @@ vault:
       exec:
         command:
           - /bin/sh
-          - -ec
-          - vault status -tls-skip-verify
+          - -c
+          - vault status -tls-skip-verify; rc=$?; [ $rc -eq 0 ] || [ $rc -eq 2 ]
       failureThreshold: 2
       initialDelaySeconds: 5
       periodSeconds: 5
