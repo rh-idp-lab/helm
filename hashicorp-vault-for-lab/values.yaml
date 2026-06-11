@@ -50,9 +50,6 @@ vault:
     # Use HTTP health endpoint so sealed Vault passes the probe (exit code 2 from
     # 'vault status' would cause the default exec probe to fail on sealed state).
     # sealedok=true → returns 200 even when sealed, allowing the unseal job to run.
-    readinessProbe:
-      enabled: true
-      path: "/v1/sys/health?standbyok=true&sealedok=true"
 
   injector:
     enabled: true
