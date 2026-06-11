@@ -1,0 +1,11 @@
+apiVersion: v2
+name: hashicorp-vault-for-lab
+description: Vault on OpenShift using the official HashiCorp chart with IDP Lab customizations
+type: application
+version: 0.2.0
+appVersion: "1.12.3"
+
+dependencies:
+  - name: vault
+    version: "0.33.0"
+    repository: https://helm.releases.hashicorp.com

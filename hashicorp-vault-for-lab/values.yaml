@@ -1,0 +1,73 @@
+nameOverride: vault
+
+# Official HashiCorp vault-helm subchart values.
+# All keys under 'vault:' are passed to the official chart.
+# 'vault.auth.namespace' is a custom key used by our templates;
+# it is ignored by the subchart.
+vault:
+  # Custom value for vault-auth ServiceAccount/Secret namespace
+  auth:
+    namespace: default
+
+  global:
+    openshift: true
+
+  server:
+    image:
+      registry: registry.connect.redhat.com
+      repository: hashicorp/vault
+      tag: "1.12.3-ubi"
+
+    standalone:
+      enabled: true
+      config: |
+        disable_mlock = true
+        ui = true
+
+        listener "tcp" {
+          tls_disable = 1
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+        }
+        storage "file" {
+          path = "/vault/data"
+        }
+
+    dataStorage:
+      enabled: true
+      size: 10Gi
+
+    serviceAccount:
+      create: true
+      name: vault
+
+    # Re-run unseal script after pod restart (script written by job-unseal-vault)
+    postStart:
+      - /bin/sh
+      - -c
+      - "cat /vault/data/unseal.sh 2>/dev/null && sh /vault/data/unseal.sh || echo 'First initialization...'"
+
+    readinessProbe:
+      exec:
+        command:
+          - /bin/sh
+          - -ec
+          - vault status -tls-skip-verify
+      failureThreshold: 2
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      successThreshold: 1
+      timeoutSeconds: 3
+
+  injector:
+    enabled: true
+    image:
+      registry: registry.connect.redhat.com
+      repository: hashicorp/vault-k8s
+      tag: "1.1.0-ubi"
+    agentImage:
+      registry: registry.connect.redhat.com
+      repository: hashicorp/vault
+      tag: "1.12.3-ubi"
+    networkPolicy:
+      enabled: true
