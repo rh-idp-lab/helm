@@ -1,0 +1,5 @@
+apiVersion: v2
+name: redhat-developer-hub-instance
+description: Backstage CR + app-config + dynamic-plugins for Red Hat Developer Hub (operator-based)
+type: application
+version: 0.1.0

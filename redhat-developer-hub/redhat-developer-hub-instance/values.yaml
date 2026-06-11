@@ -1,0 +1,26 @@
+namespace: rhdh
+
+backstage:
+  name: developer-hub
+  host:
+
+cluster:
+  subdomain:
+
+gitlab:
+  host:
+
+keycloak:
+  host:
+  realm: sso
+  loginRealm: master
+
+gitops:
+  host:
+
+quay:
+  project: quayadmin
+
+argocd:
+  enabled: true
+  syncwave: "2"

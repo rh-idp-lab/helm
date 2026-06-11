@@ -1,0 +1,5 @@
+apiVersion: v2
+name: redhat-developer-hub-operator
+description: OLM Subscription for the Red Hat Developer Hub operator
+type: application
+version: 0.1.0

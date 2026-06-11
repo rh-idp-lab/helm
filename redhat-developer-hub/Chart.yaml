@@ -11,6 +11,9 @@ dependencies:
   - name: redhat-developer-hub-config-template
     version: 0.1.0
     repository: file://redhat-developer-hub-config-template
-  - name: redhat-developer-hub-application
+  - name: redhat-developer-hub-operator
     version: 0.1.0
-    repository: file://redhat-developer-hub-application
+    repository: file://redhat-developer-hub-operator
+  - name: redhat-developer-hub-instance
+    version: 0.1.0
+    repository: file://redhat-developer-hub-instance
