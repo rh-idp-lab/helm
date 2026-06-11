@@ -7,9 +7,9 @@ metadata:
     argocd.argoproj.io/sync-wave: "0"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
-  channel: fast
+  channel: fast-1.9
   installPlanApproval: Automatic
   name: rhdh
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: rhdh-operator.v1.10.0
+  startingCSV: rhdh-operator.v1.9.6
