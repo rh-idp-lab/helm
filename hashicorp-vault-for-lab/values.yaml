@@ -47,17 +47,17 @@ vault:
       - -c
       - "cat /vault/data/unseal.sh 2>/dev/null && sh /vault/data/unseal.sh || echo 'First initialization...'"
 
-    readinessProbe:
-      exec:
-        command:
-          - /bin/sh
-          - -c
-          - vault status -tls-skip-verify; rc=$?; [ $rc -eq 0 ] || [ $rc -eq 2 ]
-      failureThreshold: 2
-      initialDelaySeconds: 5
-      periodSeconds: 5
-      successThreshold: 1
-      timeoutSeconds: 3
+    # readinessProbe:
+    #   exec:
+    #     command:
+    #       - /bin/sh
+    #       - -c
+    #       - vault status -tls-skip-verify; rc=$?; [ $rc -eq 0 ] || [ $rc -eq 2 ]
+    #   failureThreshold: 2
+    #   initialDelaySeconds: 5
+    #   periodSeconds: 5
+    #   successThreshold: 1
+    #   timeoutSeconds: 3
 
   injector:
     enabled: true
