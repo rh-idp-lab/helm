@@ -12,8 +12,7 @@ data:
     plugins:
 
       # ── Kubernetes / OpenShift Topology ──────────────────────────────────────
-      # Chapter 2 (Red Hat supported) + Chapter 3 (Tech Preview) — bundled
-      # Ref: RHDH 1.9 dynamic plugins reference
+      # RHDH 1.9 dynamic plugins reference — Chapter 2 (Red Hat supported) + Chapter 3 (Tech Preview)
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
@@ -22,45 +21,43 @@ data:
         disabled: false
 
       # ── OpenShift Pipelines (Tekton) ─────────────────────────────────────────
-      # Chapter 2 (Red Hat supported) — bundled, v3.33.3
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
+      # Chapter 2 v3.33.3 — path from section 4.5 (future ghcr.io), tag: bs_<bs-ver>__<plugin-ver> (section 4.3)
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-tekton:bs_1.45.3__3.33.3'
         disabled: false
 
       # ── ArgoCD ───────────────────────────────────────────────────────────────
-      # Chapter 2 (Red Hat supported) — bundled, v4.6.0
-      - package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend
+      # Chapter 2 v4.6.0 + Chapter 3 v1.8.1 — paths from section 4.5, tags from section 4.3
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-backstage-plugin-argo-cd-backend:bs_1.45.3__4.6.0'
         disabled: false
-      # Chapter 3 (Tech Preview) — bundled, v1.8.1
-      - package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/roadiehq-scaffolder-backend-argocd:bs_1.45.3__1.8.1'
         disabled: false
 
       # ── GitLab ───────────────────────────────────────────────────────────────
-      # Chapter 2 (Red Hat supported) + Chapter 3 (Tech Preview) — bundled
+      # Chapter 2 + Chapter 3 — bundled
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
         disabled: false
-      # Chapter 4.4 (community migrated to ghcr.io in RHDH 1.9) — v6.13.0
-      # Tag format: bs_<backstage-version>__<plugin-version> (RHDH 1.9 = Backstage 1.45.3)
+      # Chapter 4.4 v6.13.0 — community plugin migrated to ghcr.io in RHDH 1.9
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.45.3__6.13.0'
         disabled: false
 
       # ── Keycloak ─────────────────────────────────────────────────────────────
-      # Chapter 2 (Red Hat supported) — bundled, v3.16.0
+      # Chapter 2 v3.16.0 — bundled
       - package: ./dynamic-plugins/dist/backstage-community-plugin-catalog-backend-module-keycloak-dynamic
         disabled: false
 
       # ── Quay ─────────────────────────────────────────────────────────────────
-      # Chapter 2 (Red Hat supported) — bundled, v1.28.1
-      - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
+      # Chapter 2 v1.28.1 — path from section 4.5, tag from section 4.3
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:bs_1.45.3__1.28.1'
         disabled: false
-      # Chapter 4.4 (community migrated to ghcr.io in RHDH 1.9) — v1.10.1
+      # Chapter 4.4 v1.10.1 — community plugin migrated to ghcr.io in RHDH 1.9
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:bs_1.45.3__1.10.1'
         disabled: false
 
       # ── RBAC ─────────────────────────────────────────────────────────────────
-      # Chapter 2 (Red Hat supported) — bundled, v1.47.4
+      # Chapter 2 v1.47.4 — bundled
       - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
         disabled: false
