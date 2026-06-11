@@ -38,8 +38,8 @@ data:
         disabled: false
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-gitlab-dynamic
         disabled: false
-      # immobiliarelabs GitLab backend (MR/pipeline UI): on ghcr.io since RHDH 1.9
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:{{ "{{" }}inherit{{ "}}" }}'
+      # immobiliarelabs GitLab backend (MR/pipeline UI): community plugin, explicit tag required
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/immobiliarelabs-backstage-plugin-gitlab-backend:bs_1.49.4__7.0.1'
         disabled: false
 
       # ── Keycloak — bundled in RHDH 1.10 ──────────────────────────────────────
@@ -49,7 +49,7 @@ data:
       # ── Quay — moved to ghcr.io in RHDH 1.10 ────────────────────────────────
       - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay:{{ "{{" }}inherit{{ "}}" }}'
         disabled: false
-      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:{{ "{{" }}inherit{{ "}}" }}'
+      - package: 'oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/backstage-community-plugin-quay-backend:bs_1.49.4__1.14.0'
         disabled: false
 
       # ── RBAC ─────────────────────────────────────────────────────────────────
