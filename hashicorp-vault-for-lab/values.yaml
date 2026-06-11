@@ -47,17 +47,12 @@ vault:
       - -c
       - "cat /vault/data/unseal.sh 2>/dev/null && sh /vault/data/unseal.sh || echo 'First initialization...'"
 
-    # readinessProbe:
-    #   exec:
-    #     command:
-    #       - /bin/sh
-    #       - -c
-    #       - vault status -tls-skip-verify; rc=$?; [ $rc -eq 0 ] || [ $rc -eq 2 ]
-    #   failureThreshold: 2
-    #   initialDelaySeconds: 5
-    #   periodSeconds: 5
-    #   successThreshold: 1
-    #   timeoutSeconds: 3
+    # Use HTTP health endpoint so sealed Vault passes the probe (exit code 2 from
+    # 'vault status' would cause the default exec probe to fail on sealed state).
+    # sealedok=true → returns 200 even when sealed, allowing the unseal job to run.
+    readinessProbe:
+      enabled: true
+      path: "/v1/sys/health?standbyok=true&sealedok=true"
 
   injector:
     enabled: true
