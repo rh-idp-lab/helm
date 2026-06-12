@@ -38,6 +38,7 @@ spec:
       kind: Backstage
       jsonPointers:
         - /metadata/annotations/rhdh.redhat.com~1ext-config-hash
+        - /spec/monitoring
         - /status
     - group: apps
       kind: Deployment
