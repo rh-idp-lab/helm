@@ -71,6 +71,17 @@ data:
     catalog:
       rules:
         - allow: [Component, System, API, Resource, Location, Template, User, Group]
+      providers:
+        keycloakOrg:
+          default:
+            baseUrl: https://{{ .Values.keycloak.host }}
+            loginRealm: {{ .Values.keycloak.loginRealm }}
+            realm: {{ .Values.keycloak.realm }}
+            clientId: "${OAUTH_CLIENT_ID}"
+            clientSecret: "${OAUTH_CLIENT_SECRET}"
+            schedule:
+              frequency: { minutes: 30 }
+              timeout: { minutes: 3 }
       locations:
         - type: url
           target: https://{{ .Values.gitlab.host }}/rhdh/developer-hub-config/-/blob/main/catalog-info.yaml
