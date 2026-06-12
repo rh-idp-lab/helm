@@ -30,6 +30,8 @@ data:
 
     auth:
       environment: production
+      session:
+        secret: "${BACKEND_SECRET}"
       providers:
         oidc:
           production:
