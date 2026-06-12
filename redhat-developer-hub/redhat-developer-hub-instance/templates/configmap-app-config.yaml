@@ -8,7 +8,7 @@ metadata:
 data:
   "app-config.yaml": |
     app:
-      title: Red Hat Developer Hub
+      title: Internal Developer Platform Lab
       baseUrl: https://{{ .Values.backstage.host }}
 
     backend:
@@ -18,6 +18,12 @@ data:
             options:
               subject: legacy-default-config
               secret: "${BACKEND_SECRET}"
+          - type: static
+            options:
+              token: mYsecretToK3n
+              subject: catalog-access
+              accessRestrictions:
+                - plugin: catalog
       baseUrl: https://{{ .Values.backstage.host }}
       cors:
         origin: https://{{ .Values.backstage.host }}
@@ -42,7 +48,7 @@ data:
             additionalScopes: openid profile email
             signIn:
               resolvers:
-                - resolver: emailMatchingUserEntityProfileEmail
+                - resolver: preferredUsernameMatchingUserEntityName
 
     signInPage: oidc
 
@@ -52,11 +58,21 @@ data:
       clusterLocatorMethods:
         - type: config
           clusters:
-            - name: openshift
+            - name: dev-cluster
               url: https://kubernetes.default.svc
               authProvider: serviceAccount
               serviceAccountToken: "${KUBERNETES_SA_TOKEN}"
               skipTLSVerify: true
+      customResources:
+        - group: 'route.openshift.io'
+          apiVersion: 'v1'
+          plural: 'routes'
+        - group: 'tekton.dev'
+          apiVersion: 'v1beta1'
+          plural: 'pipelineruns'
+        - group: 'tekton.dev'
+          apiVersion: 'v1beta1'
+          plural: 'taskruns'
 
     argocd:
       appLocatorMethods:
@@ -72,7 +88,7 @@ data:
 
     catalog:
       rules:
-        - allow: [Component, System, API, Resource, Location, Template, User, Group]
+        - allow: [Component, System, API, Resource, Location, Template, User, Group, Domain]
       providers:
         keycloakOrg:
           default:
@@ -84,11 +100,36 @@ data:
             schedule:
               frequency: { minutes: 30 }
               timeout: { minutes: 3 }
+        gitlab:
+          default:
+            host: {{ .Values.gitlab.host }}
+            branch: main
+            fallbackBranch: master
+            skipForkedRepos: true
+            entityFilename: catalog-info.yaml
+            projectPattern: \w*techdocs\w*
+            schedule:
+              frequency: { minutes: 2 }
+              timeout: { minutes: 3 }
+              initialDelay: { seconds: 15 }
+          all-location-entity:
+            host: {{ .Values.gitlab.host }}
+            filters:
+              branch: main
+            skipForkedRepos: true
+            entityFilename: all-location.yaml
+            catalogPath: /**/all-location.yaml
+            projectPattern: \b(all-location\w*)
+            excludeRepos: []
+            schedule:
+              frequency: { seconds: 15 }
+              initialDelay: { seconds: 15 }
+              timeout: { minutes: 3 }
       locations:
         - type: url
-          target: https://{{ .Values.gitlab.host }}/rhdh/developer-hub-config/-/blob/main/catalog-info.yaml
+          target: https://{{ .Values.gitlab.host }}/rhdh/opencodequest-templates/-/blob/main/entities.yaml
           rules:
-            - allow: [User, Group, Template, Location]
+            - allow: [Domain, System]
 
     permission:
       enabled: true
