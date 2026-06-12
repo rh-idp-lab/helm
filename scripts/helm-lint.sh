@@ -2,6 +2,10 @@
 # Lint only the Helm charts affected by the files passed as arguments (pre-commit hook).
 # For each changed file, walks up the directory tree to find the nearest Chart.yaml.
 set -euo pipefail
+set -x
+
+# Ensure Homebrew binaries (macOS) are on the PATH when running in hook context
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 CHARTS=""
 
