@@ -1,16 +1,16 @@
-nameOverride: "backstage"
-
 gitops:
-  namespace:
+  namespace: openshift-gitops
+
+application:
+  name: rhdh
+  destination:
+    namespace: rhdh
 
 helm:
-  repo: https://charts.openshift.io
-  chart: redhat-developer-hub
-  version: 1.8.6
+  repoURL: https://github.com/rh-idp-lab/helm.git
+  targetRevision: main
+  path: redhat-developer-hub
   values:
-    git:
-      host: 
-      group: rhdh
-      repo: developer-hub-config
-      revision: main
-      path: values.yaml
+    repoURL: ""   # override at deploy time (e.g. https://gitlab.../rhdh/developer-hub-config.git)
+    revision: main
+    path: values.yaml

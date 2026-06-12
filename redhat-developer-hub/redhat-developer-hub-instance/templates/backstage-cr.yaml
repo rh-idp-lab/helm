@@ -27,5 +27,15 @@ spec:
     route:
       enabled: true
       host: {{ .Values.backstage.host }}
+  deployment:
+    patch:
+      spec:
+        template:
+          spec:
+            volumes:
+              - $patch: replace
+                name: dynamic-plugins-root
+                persistentVolumeClaim:
+                  claimName: dynamic-plugins-root
   database:
     enableLocalDb: true

@@ -1,14 +1,14 @@
+---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name:  {{ include "redhat-developer-hub-application.name" . }}
+  name: {{ .Values.application.name }}
   namespace: {{ .Values.gitops.namespace }}
   finalizers:
     - resources-finalizer.argocd.argoproj.io/foreground
 spec:
   destination:
-    name: ""
-    namespace: {{ include "redhat-developer-hub-application.namespace" . }}
+    namespace: {{ .Values.application.destination.namespace }}
     server: 'https://kubernetes.default.svc'
   project: default
   syncPolicy:
@@ -26,27 +26,18 @@ spec:
       - RespectIgnoreDifferences=true
       - ApplyOutOfSyncOnly=true
   sources:
-    - repoURL: {{ .Values.helm.repo }}
-      chart: {{ .Values.helm.chart }}
-      targetRevision: {{ .Values.helm.version }}
+    - repoURL: {{ .Values.helm.repoURL }}
+      targetRevision: {{ .Values.helm.targetRevision }}
+      path: {{ .Values.helm.path }}
       helm:
-        values: |
-          upstream:
-            postgresql:
-              volumePermissions:
-                enabled: false
-              primary:
-                podSecurityContext:
-                  enabled: true
-                  fsGroup: 26
         valueFiles:
-        - $values/{{ .Values.helm.values.git.path }}
-    - repoURL: 'https://{{ .Values.helm.values.git.host }}/{{ .Values.helm.values.git.group }}/{{ .Values.helm.values.git.repo }}.git'
-      targetRevision: {{ .Values.helm.values.git.revision }}
+          - $values/{{ .Values.helm.values.path }}
+    - repoURL: {{ .Values.helm.values.repoURL }}
+      targetRevision: {{ .Values.helm.values.revision }}
       ref: values
   ignoreDifferences:
-      - group: apps
-        kind: Deployment
-        name: {{ include "redhat-developer-hub-application.name" . }}-developer-hub
-        jsonPointers:
-          - /spec/strategy
+    - group: apps
+      kind: Deployment
+      name: backstage-developer-hub
+      jsonPointers:
+        - /spec/strategy
