@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: helm-lint
+        name: Helm Lint (changed charts)
+        language: script
+        entry: scripts/helm-lint.sh
+        pass_filenames: true
+        types_or: [yaml, json]

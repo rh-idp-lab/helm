@@ -59,6 +59,9 @@ client:
     redirectUri:
       - "urn:ietf:wg:oauth:2.0:oob"
       - "*"
+  openshift:
+    redirectUri: ""
+    webOrigin: ""
 
 backstageClient:
   backstagePlugin:

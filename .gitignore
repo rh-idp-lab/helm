@@ -1,0 +1,8 @@
+# Helm dependency artifacts
+charts/*.tgz
+**/charts/*.tgz
+
+# Chart.lock is only meaningful for charts with external dependencies
+Chart.lock
+**/Chart.lock
+!hashicorp-vault-for-lab/Chart.lock
