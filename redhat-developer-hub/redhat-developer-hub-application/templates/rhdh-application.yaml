@@ -34,8 +34,14 @@ spec:
       values: |
         {{- .Values.helm.inlineValues | toYaml | nindent 8 }}
   ignoreDifferences:
+    - group: rhdh.redhat.com
+      kind: Backstage
+      jsonPointers:
+        - /metadata/annotations/rhdh.redhat.com~1ext-config-hash
+        - /status
     - group: apps
       kind: Deployment
       name: backstage-developer-hub
       jsonPointers:
         - /spec/strategy
+        - /spec/template/metadata/annotations/rhdh.redhat.com~1ext-config-hash
