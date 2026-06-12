@@ -9,5 +9,5 @@ application:
 helm:
   repoURL: https://github.com/rh-idp-lab/helm.git
   targetRevision: main
-  path: redhat-developer-hub
+  path: redhat-developer-hub/redhat-developer-hub-instance
   inlineValues: {}  # override with cluster-specific values at deploy time
