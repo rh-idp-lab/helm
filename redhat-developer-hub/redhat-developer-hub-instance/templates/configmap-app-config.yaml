@@ -75,7 +75,7 @@ data:
         keycloakOrg:
           default:
             baseUrl: https://{{ .Values.keycloak.host }}
-            loginRealm: {{ .Values.keycloak.loginRealm }}
+            loginRealm: {{ .Values.keycloak.loginRealm | default .Values.keycloak.realm }}
             realm: {{ .Values.keycloak.realm }}
             clientId: "${OAUTH_CLIENT_ID}"
             clientSecret: "${OAUTH_CLIENT_SECRET}"

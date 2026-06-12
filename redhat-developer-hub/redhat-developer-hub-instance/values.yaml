@@ -13,7 +13,7 @@ gitlab:
 keycloak:
   host:
   realm: sso
-  loginRealm: master
+  loginRealm: ""
 
 gitops:
   host:
