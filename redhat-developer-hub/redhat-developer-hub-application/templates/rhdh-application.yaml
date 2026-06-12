@@ -23,18 +23,16 @@ spec:
       limit: 15
     syncOptions:
       - CreateNamespace=true
+      - SkipDryRunOnMissingResource=true
       - RespectIgnoreDifferences=true
       - ApplyOutOfSyncOnly=true
-  sources:
-    - repoURL: {{ .Values.helm.repoURL }}
-      targetRevision: {{ .Values.helm.targetRevision }}
-      path: {{ .Values.helm.path }}
-      helm:
-        valueFiles:
-          - $values/{{ .Values.helm.values.path }}
-    - repoURL: {{ .Values.helm.values.repoURL }}
-      targetRevision: {{ .Values.helm.values.revision }}
-      ref: values
+  source:
+    repoURL: {{ .Values.helm.repoURL }}
+    targetRevision: {{ .Values.helm.targetRevision }}
+    path: {{ .Values.helm.path }}
+    helm:
+      values: |
+        {{- .Values.helm.inlineValues | toYaml | nindent 8 }}
   ignoreDifferences:
     - group: apps
       kind: Deployment

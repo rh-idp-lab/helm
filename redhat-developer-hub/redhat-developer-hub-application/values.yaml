@@ -10,7 +10,4 @@ helm:
   repoURL: https://github.com/rh-idp-lab/helm.git
   targetRevision: main
   path: redhat-developer-hub
-  values:
-    repoURL: ""   # override at deploy time (e.g. https://gitlab.../rhdh/developer-hub-config.git)
-    revision: main
-    path: values.yaml
+  inlineValues: {}  # override with cluster-specific values at deploy time
