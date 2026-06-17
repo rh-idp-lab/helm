@@ -1,0 +1,4 @@
+operator:
+  namespace: rhtpa-operator
+  channel: stable-v1.1
+  installPlanApproval: Automatic
