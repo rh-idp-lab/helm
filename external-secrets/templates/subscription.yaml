@@ -12,4 +12,3 @@ spec:
   name: openshift-external-secrets-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: {{ .Values.operator.startingCSV }}
